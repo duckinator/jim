@@ -1,139 +1,44 @@
 # frozen_string_literal: true
 
 require_relative "jim/version"
+require_relative "jim/unsafe_spec"
 require "prism"
 
 module Jim
   class Error < StandardError; end
-  class SpecError < Error; end
 
-  attr_reader :specs
-
-  def self.add_spec(spec)
-    @specs ||= []
-    @specs << spec
-  end
-
-  class TypedHash < Hash
-    class TypedHashError < Jim::Error; end
-
-    def initialize(key_cls, val_cls, init=nil)
-      @key_cls = key_cls
-      @val_cls = val_cls
-
-      init.map { |k, v| self[k] = v } unless init.nil?
-    end
-
-    def []=(key, val)
-      unless key.is_a?(@key_cls)
-        raise TypedHashError, "expected key to be #{@key_cls}, got #{key.class}: #{key.inspect}"
-      end
-
-      unless val.is_a?(@val_cls)
-        raise TypedHashError, "expected val to be #{@val_cls}, got #{val.class}: #{val.inspect}"
-      end
-
-      super(key, val)
-    end
-  end
-
-  class UnsafeSpec
-    attr_accessor :_extract_spec_fn
-
-    @@accessors = [:metadata]
-
-    def self.string_accessor(name)
-      @@accessors << name
-      attr_reader(name)
-      define_method("#{name}=") { |value|
-        raise SpecError, "expected #{name} to be a String, got #{value.class}: #{value.inspect}" unless value.is_a?(String)
-        instance_variable_set(:"@#{name}", value)
-      }
-    end
-
-    def self.array_accessor(name)
-      @@accessors << name
-      attr_reader(name)
-      define_method("#{name}=") { |value|
-        unless value.is_a?(Array) && value.all? { |x| x.is_a?(String) }
-          raise SpecError, "expected #{name} to be an Array of Strings, got #{value.class}: #{value.inspect}"
-        end
-        instance_variable_set(:"@#{name}", value)
-      }
-    end
-
-    def self.string_or_array_accessor(name)
-      @@accessors << name
-      attr_reader(name)
-      define_method("#{name}=") { |value|
-        value = [value] if value.is_a?(String)
-        unless value.is_a?(Array) && value.all? { |x| x.is_a?(String) }
-          raise SpecError, "expected #{name} to be an Array of Strings, got #{value.class}: #{value.inspect}"
-        end
-        instance_variable_set(:"@#{name}", value)
-      }
-    end
-
-    array_accessor :authors
-    array_accessor :files
-    string_accessor :name
-    string_accessor :summary
-    string_accessor :description
-    string_accessor :homepage
-    string_or_array_accessor :email
-    array_accessor :licenses
-    string_accessor :bindir
-    array_accessor :executables
-    array_accessor :require_paths
-    string_accessor :required_ruby_version
-    string_accessor :version
-
-    def initialize(&block)
-      @metadata = TypedHash.new(String, String, {})
-
-      yield self
-      @@extract_spec_fn.call(self)
-    end
-
-    def metadata
-      @metadata
-    end
-
-    def metadata=(value)
-      @metadata = TypedHash.new(String, String, value)
-    end
-
-    def author=(author)
-      self.authors=([author])
-    end
-
-    def license=(license)
-      self.licenses=([license])
-    end
-
-    def to_h
-      @@accessors.map { |k, v| [k, instance_variable_get(:"@#{k}")] }.to_h
-    end
-
-    def inspect
-      accessors = to_h.map { |k, v| [k, v.inspect].join('=') }
-      "<Jim::UnsafeSpec #{accessors.join(' ')}>"
-    end
-  end
-
-  module GemCompat
-    Specification = UnsafeSpec
-  end
-
+  # Given a path to a gemspec, which contains arbitrary code of dubious provenance,
+  # run the code in a way that can returns the Jim::UnsafeSpec instance
+  # created by the Gem::Specification.new {...} call.
+  #
+  # That is to say, if you have jim.gemspec containing:
+  #     Gem::Specification.new do |spec|
+  #       spec.name = "foo"
+  #     end
+  #
+  # You get a Jim::UnsafeSpec returned, even though you have to use `load`,
+  # and `load` always returns a boolean.
+  #
+  # This is truly cursed. I hate everything about this.
+  # It's also the least-cursed option I could think of.
   def self.load_spec(gemspec)
+    # Make sure the variable is in the outer scope.
     spec = nil
+    # Create a lambda that can assign that variable.
     extract_spec = ->(new_spec) { spec = new_spec }
+    # Create a wrapper module to attempt to isolate the calamity.
     Module.new { |mod|
+      # Create a wrapper module named `Gem` for compatibility.
       mod.const_set(:Gem, Module.new {|gem_mod|
+        # Clone the UnsafeSpec class.
         spec_cls = UnsafeSpec.clone
+        # For *that clone specifically*, set @@extract_spec_fn to the lambda.
         spec_cls.class_variable_set(:@@extract_spec_fn, extract_spec)
+        # Inside our fake `Gem` module, shove our fake `Specification` class.
         gem_mod.const_set(:Specification, spec_cls)
       })
+      # Summon an eldritch being, hoping that `wrap=self` contains some of
+      # the impending disaster.
       load(gemspec, wrap=self)
     }
     spec
@@ -143,6 +48,7 @@ module Jim
     gemspec, *rest = Dir.glob("*.gemspec")
     abort "Found multiple gemspecs: #{gemspec}, #{rest.join(',')}" unless rest.empty?
 
-    p load_spec(gemspec)
+    require 'pp'
+    pp load_spec(gemspec).to_h
   end
 end
