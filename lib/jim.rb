@@ -45,10 +45,7 @@ module Jim
   end
 
   def self.cli
-    gemspec, *rest = Dir.glob("*.gemspec")
-    abort "Found multiple gemspecs: #{gemspec}, #{rest.join(',')}" unless rest.empty?
-
-    require 'pp'
-    pp load_spec(gemspec).to_h
+    require_relative "jim/cli"
+    Cli.run
   end
 end
