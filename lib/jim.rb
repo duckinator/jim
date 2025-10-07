@@ -2,6 +2,7 @@
 
 require_relative "jim/version"
 require_relative "jim/unsafe_spec"
+require_relative "jim/platform"
 require "prism"
 
 module Jim
@@ -36,6 +37,8 @@ module Jim
         spec_cls.class_variable_set(:@@extract_spec_fn, extract_spec)
         # Inside our fake `Gem` module, shove our fake `Specification` class.
         gem_mod.const_set(:Specification, spec_cls)
+
+        gem_mod.define_singleton_method(:win_platform?, &Jim::Platform.method(:windows?))
       })
       # Summon an eldritch being, hoping that `wrap=self` contains some of
       # the impending disaster.
