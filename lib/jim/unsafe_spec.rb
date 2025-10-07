@@ -1,9 +1,13 @@
+require_relative "typed_array"
 require_relative "typed_hash"
 
 module Jim
   class SpecError < StandardError; end
-
   class UnsafeSpec
+    ArrayOfStrings = Jim::TypedArray(String)
+    HashOfStringToString = Jim::TypedHash(String, String)
+    HashOfStringToAOS = Jim::TypedHash(String, ArrayOfStrings)
+
     @@accessors = [:metadata]
 
     def self.string_accessor(name)
@@ -38,6 +42,14 @@ module Jim
       }
     end
 
+    def self.array_of_strings_accessor(name)
+      @@accessors << name
+      attr_reader(name)
+      define_method("#{name}=") { |value|
+        instance_variable_set(:"@#{name}", ArrayOfStrings.from(value))
+      }
+    end
+
     array_accessor :authors
     array_accessor :files
     string_accessor :name
@@ -51,9 +63,13 @@ module Jim
     array_accessor :require_paths
     string_accessor :required_ruby_version
     string_accessor :version
+    array_of_strings_accessor :extra_rdoc_files
+    array_of_strings_accessor :rdoc_options
 
     def initialize(&block)
-      @metadata = TypedHash.new(String, String, {})
+      @metadata = HashOfStringToString.new
+      @runtime_dependencies = HashOfStringToAOS.new
+      @dev_dependencies = HashOfStringToAOS.new
 
       yield self
       @@extract_spec_fn.call(self)
@@ -64,7 +80,7 @@ module Jim
     end
 
     def metadata=(value)
-      @metadata = TypedHash.new(String, String, value)
+      @metadata = HashOfStringToString.from(value)
     end
 
     def author=(author)
@@ -73,6 +89,15 @@ module Jim
 
     def license=(license)
       self.licenses=([license])
+    end
+
+    def add_dependency(gem_name, *requirements)
+      @runtime_dependencies[gem_name] = ArrayOfStrings.from(requirements)
+    end
+    alias_method :add_runtime_dependency, :add_dependency
+
+    def add_development_dependency(gem_name, *requirements)
+      @dev_dependencies[gem_name] = ArrayOfStrings.from(requirements)
     end
 
     def to_h

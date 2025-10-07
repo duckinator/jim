@@ -1,6 +1,4 @@
 module Jim
-  class TypedHashError < StandardError; end
-
   ##
   # A Hash that raises exceptions unless keys and values are of the
   # specified types.
@@ -15,23 +13,42 @@ module Jim
   # #=> Jim::TypedHashError: expected val to be String, got Integer: 1
   # ```
   class TypedHash < Hash
-    def initialize(key_cls, val_cls, init=nil)
-      @key_cls = key_cls
-      @val_cls = val_cls
+    class TypedHashError < TypeError; end
 
-      init.map { |k, v| self[k] = v } unless init.nil?
+    class << self
+      attr_accessor :key_class
+      attr_accessor :value_class
+
+      def from(val)
+        raise TypedHashError, "expected Hash, got #{val.class}" unless val.is_a?(Hash)
+        new(val).merge(val)
+      end
+    end
+
+    def merge(other)
+      other.map { |k, v| self[k] = v }
     end
 
     def []=(key, val)
-      unless key.is_a?(@key_cls)
-        raise TypedHashError, "expected key to be #{@key_cls}, got #{key.class}: #{key.inspect}"
+      unless key.is_a?(self.class.key_class)
+        raise TypedHashError, "expected key to be #{self.class.key_class}, got #{key.class}: #{key.inspect}"
       end
 
-      unless val.is_a?(@val_cls)
-        raise TypedHashError, "expected val to be #{@val_cls}, got #{val.class}: #{val.inspect}"
+      val = self.class.value_class.from(val) if val.is_a?(Array) && self.class.value_class.respond_to?(:from)
+
+      unless val.is_a?(self.class.value_class)
+        raise TypedHashError, "expected val to be #{self.class.value_class}, got #{val.class}: #{val.inspect}"
       end
 
       super(key, val)
     end
+  end
+
+  def self.TypedHash(key_class, value_class)
+    cls = Class.new(TypedHash)
+    cls.set_temporary_name("hashOf#{key_class.name}To#{value_class.name}")
+    cls.instance_variable_set(:@key_class, key_class)
+    cls.instance_variable_set(:@value_class, value_class)
+    cls
   end
 end
