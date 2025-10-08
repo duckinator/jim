@@ -1,3 +1,4 @@
+require "fileutils"
 require_relative "build"
 require_relative "client"
 require_relative "config"
@@ -8,7 +9,7 @@ module Jim
   module Cli
     extend Jim::Console
 
-    METHODS = %w[gemspec signin signout build help]
+    METHODS = %w[signin signout build clean gemspec help]
 
     def self.run
       ARGV[0] = "help" if %w[--help -h].include?(ARGV[0])
@@ -100,6 +101,11 @@ module Jim
       gemspec = args.shift
 
       Jim::Build.new(gemspec, path: options[:path]).execute!
+    end
+
+    # Clean up build artifacts
+    def self.clean
+      FileUtils.rm_r(Jim::Build::OUT_DIR) if File.exist?(Jim::Build::OUT_DIR)
     end
 
     # Print information about the gemspec in the current directory.

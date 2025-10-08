@@ -6,10 +6,11 @@ module Jim
   class BuildError < StandardError; end
 
   class Build
+    OUT_DIR = "dist"
+
     def initialize(gemspec, path: nil)
       @gemspecs = [*(gemspec || find_gemspecs)]
       @path = path
-      @out_dir = "dist"
 
       raise BuildError, "no gemspec found" if @gemspecs.empty?
     end
@@ -34,7 +35,7 @@ module Jim
 
     def output_file_for_spec(spec)
       with_path {
-        Pathname.new(@out_dir)
+        Pathname.new(OUT_DIR)
           .join("#{spec.name}-#{spec.version}.gem")
           .expand_path
       }
