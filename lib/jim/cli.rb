@@ -1,3 +1,4 @@
+require_relative "build"
 require_relative "client"
 require_relative "config"
 require_relative "console"
@@ -7,13 +8,16 @@ module Jim
   module Cli
     extend Jim::Console
 
-    METHODS = %w[gemspec signin signout help]
+    METHODS = %w[gemspec signin signout build help]
 
     def self.run
+      ARGV[0] = "help" if %w[--help -h].include?(ARGV[0])
+
       if METHODS.include?(ARGV[0])
         send(*ARGV)
       else
         help
+        exit 1
       end
     end
 
@@ -46,7 +50,13 @@ module Jim
                   "Multifactor authentication code.",
                   :otp)
 
+      opts.simple("-h", "--help",
+                  "Show this help message and exit",
+                  :help)
+
       options = opts.parse_and_consume_all!(args)
+
+      return puts opts if options[:help]
 
       gem_host = prompt("Host", options[:host])
 
@@ -69,6 +79,29 @@ module Jim
       Jim::Config.delete_api_key
     end
 
+    # Builds a Gem from the provided gemspec.
+    def self.build(*args)
+      opts = SimpleOpts.new(
+        banner: "Usage: jim build [-C PATH] GEMSPEC",
+      )
+
+      opts.simple("-C PATH",
+                  "Change the current working directory to PATH before building",
+                  :path)
+
+      opts.simple("-h", "--help",
+                  "Show this help message and exit",
+                  :help)
+
+      options, args = opts.parse_with_args(args)
+
+      return puts opts if options[:help] || args.length > 1
+
+      gemspec = args.shift
+
+      Jim::Build.new(gemspec, path: options[:path]).execute!
+    end
+
     # Print information about the gemspec in the current directory.
     def self.gemspec(spec=nil)
       if spec.nil?
@@ -83,7 +116,7 @@ module Jim
     # Print this help text.
     def self.help
       puts <<~EOF
-        Usage: jim [OPTIONS] [COMMAND] [ARGS...]
+        Usage: jim [COMMAND] [OPTIONS] [ARGS...]
 
         Commands
           #{subcommand_summaries("jim", METHODS).join("\n  ")}

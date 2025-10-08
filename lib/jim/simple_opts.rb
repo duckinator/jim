@@ -42,6 +42,12 @@ module Jim
       raise UnexpectedArgument, args[0] unless args.empty?
       @okay_options
     end
+
+    def parse_with_args(args)
+      args = args.dup
+      parse!(args)
+      [@okay_options, args]
+    end
   end
 end
 
