@@ -59,6 +59,11 @@ module Jim
       File.read(KEY_FILE)
     end
 
+    def self.delete_api_key
+      File.delete(KEY_FILE) if File.exist?(KEY_FILE)
+      raise "failed to remove #{KEY_FILE}?" if File.exist?(KEY_FILE)
+    end
+
     def self.has_api_key
       File.exist?(KEY_FILE)
     end
