@@ -1,5 +1,6 @@
 /dist/
 *.gem
+*.tar
 /.bundle/
 /.yardoc
 /_yardoc/
