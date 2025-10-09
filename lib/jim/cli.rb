@@ -9,7 +9,7 @@ module Jim
   module Cli
     extend Jim::Console
 
-    METHODS = %w[signin signout build clean gemspec help]
+    METHODS = %w[signin signout build clean gemspec help tartest]
 
     def self.run
       ARGV[0] = "help" if %w[--help -h].include?(ARGV[0])
@@ -117,6 +117,18 @@ module Jim
 
       require 'pp'
       pp Jim.load_spec(spec).to_h
+    end
+
+    # Generate a dubious tarfile
+    def self.tartest
+      require_relative "tar"
+      Jim::Tar::UStarBuilder.new.add_file(
+        'file-contents', name: 'file-name', mode: '664',
+        oid: '1000', gid: '1000',
+        uname: 'puppy', gname: 'puppy'
+      )
+        .build
+        .save('test.tar')
     end
 
     # Print this help text.
