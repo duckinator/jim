@@ -1,5 +1,4 @@
 require_relative "http"
-require "base64"
 require "date"
 require "etc"
 
