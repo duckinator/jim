@@ -7,7 +7,8 @@ module Jim
       File.open(path) { UStarBuilder.new(&block) }
     end
 
-    RECORD_SIZE = 512
+    BLOCK_SIZE = 512
+    RECORD_SIZE = BLOCK_SIZE * 20
 
     HEADER_INFO = [
       # name      pack    unpack    offset
@@ -39,14 +40,14 @@ module Jim
 
       def self.defaults
         {
-          magic: "ustar\0",
-          version: "00",
+          magic: "ustar  ",
+          version: " ",
           checksum: "",
           mtime: source_date_epoch,
           typeflag: "0",
           linkname: "",
-          devmajor: "0",
-          devminor: "0",
+          devmajor: "\x00",
+          devminor: "\x00",
           prefix: "",
         }
       end
@@ -63,14 +64,21 @@ module Jim
       end
 
       def self.from(contents, **opts)
-        opts[:size] = contents.length.to_s(8)
+        opts[:size] = contents.length
         HEADER_INFO.each { |(name, pack, unpack, offset)|
           opts[name] = opts[name] || self.defaults.fetch(name)
         }
 
-        opts[:mtime] = opts[:mtime].to_i.to_s(8)
-        opts[:devmajor] = opts[:devmajor].rjust(7, "0")
-        opts[:devminor] = opts[:devminor].rjust(7, "0")
+        opts[:mode] = opts[:mode].rjust(7, "0")
+        opts[:oid] = opts[:oid].to_i.to_s(8).rjust(7, "0")
+        opts[:gid] = opts[:gid].to_i.to_s(8).rjust(7, "0")
+        opts[:size] = opts[:size].to_s(8).rjust(11, "0")
+        opts[:mtime] = opts[:mtime].to_i.to_s(8).rjust(11, "0")
+
+        # TODO: Checksum
+
+        #opts[:devmajor] = opts[:devmajor].rjust(7, "0")
+        #opts[:devminor] = opts[:devminor].rjust(7, "0")
 
         self.open {
           HEADER_INFO.map { |(name, pack, unpack, offset)|
@@ -79,11 +87,7 @@ module Jim
 
           write([nil].pack("Z12"))
 
-          length = contents.length
-          unless (contents.length % RECORD_SIZE).zero?
-            length += RECORD_SIZE - (contents.length % RECORD_SIZE)
-          end
-          write([contents].pack("a#{length}"))
+          write([contents].pack("a#{RECORD_SIZE - BLOCK_SIZE}"))
           self.string
         }
       end

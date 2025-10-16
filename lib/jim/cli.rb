@@ -123,7 +123,7 @@ module Jim
     def self.tartest
       require_relative "tar"
       Jim::Tar::UStarBuilder.new.add_file(
-        'file-contents', name: 'file-name', mode: '664',
+        'a' * 512, name: 'file-name', mode: '664',
         oid: '1000', gid: '1000',
         uname: 'puppy', gname: 'puppy'
       )
