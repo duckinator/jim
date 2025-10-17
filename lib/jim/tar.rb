@@ -87,7 +87,14 @@ module Jim
 
           write([nil].pack("Z12"))
 
-          write([contents].pack("a#{RECORD_SIZE - BLOCK_SIZE}"))
+          length = contents.length
+          unless (contents.length % BLOCK_SIZE).zero?
+            length += BLOCK_SIZE - (contents.length % BLOCK_SIZE)
+          end
+          write([contents].pack("a#{length}"))
+
+          write([nil].pack("a1024"))
+
           self.string
         }
       end
@@ -110,6 +117,7 @@ module Jim
       end
 
       def build
+        @io.write([nil].pack("a#{RECORD_SIZE - @io.pos}"))
         @io.close_write
         UStarBuilt.new(@io)
       end
