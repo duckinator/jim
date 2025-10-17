@@ -27,6 +27,13 @@ module Jim
       [:_PADDING, 'Z12',  'Z12',    500],
     ]
 
+    def self.source_date_epoch
+      # The default value for SOURCE_DATE_EPOCH if not specified.
+      # We want a date after 1980-01-01, to prevent issues with Zip files.
+      # This particular timestamp is for 1980-01-02 00:00:00 GMT.
+      Time.at(ENV['SOURCE_DATE_EPOCH'] || 315_619_200).utc.freeze
+    end
+
     class UStarRecord < StringIO
       def self.open(&block)
         super { |s|
@@ -40,7 +47,7 @@ module Jim
           magic: "ustar  ",
           version: " ",
           checksum: "".ljust(8),
-          mtime: source_date_epoch,
+          mtime: Jim::Tar.source_date_epoch,
           typeflag: "0",
           linkname: "",
           devmajor: "\x00",
@@ -48,13 +55,6 @@ module Jim
           prefix: "",
           _PADDING: nil,
         }
-      end
-
-      def self.source_date_epoch
-        # The default value for SOURCE_DATE_EPOCH if not specified.
-        # We want a date after 1980-01-01, to prevent issues with Zip files.
-        # This particular timestamp is for 1980-01-02 00:00:00 GMT.
-        Time.at(ENV['SOURCE_DATE_EPOCH'] || 315_619_200).utc.freeze
       end
 
       def self.load(file)
@@ -129,10 +129,16 @@ module Jim
       end
 
       def save(file)
-        File.open(file, 'w') { |f|
-          @io.rewind
-          IO.copy_stream(@io, f)
-        }
+        @io.rewind
+
+        if File.extname(file) == ".gz"
+          Zlib::GzipWriter.open(file) { |gz|
+            gz.mtime = Jim::Tar.source_date_epoch.to_i
+            IO.copy_stream(@io, gz)
+          }
+        else
+          IO.copy_stream(@io, file)
+        end
       end
     end
   end
