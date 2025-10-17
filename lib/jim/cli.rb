@@ -3,6 +3,7 @@ require_relative "build"
 require_relative "client"
 require_relative "config"
 require_relative "console"
+require_relative "gemfile"
 require_relative "simple_opts"
 
 module Jim
@@ -81,31 +82,41 @@ module Jim
     end
 
     # Builds a Gem from the provided gemspec.
-    def self.build(*args)
-      opts = SimpleOpts.new(
-        banner: "Usage: jim build [-C PATH] GEMSPEC",
-      )
-
-      opts.simple("-C PATH",
-                  "Change the current working directory to PATH before building",
-                  :path)
-
-      opts.simple("-h", "--help",
-                  "Show this help message and exit",
-                  :help)
-
-      options, args = opts.parse_with_args(args)
-
-      return puts opts if options[:help] || args.length > 1
-
-      gemspec = args.shift
-
-      Jim::Build.new(gemspec, path: options[:path]).execute!
-    end
+#    def self.build(*args)
+#      opts = SimpleOpts.new(
+#        banner: "Usage: jim build [-C PATH] GEMSPEC",
+#      )
+#
+#      opts.simple("-C PATH",
+#                  "Change the current working directory to PATH before building",
+#                  :path)
+#
+#      opts.simple("-h", "--help",
+#                  "Show this help message and exit",
+#                  :help)
+#
+#      options, args = opts.parse_with_args(args)
+#
+#      return puts opts if options[:help] || args.length > 1
+#
+#      gemspec = args.shift
+#
+#      Jim::Build.new(gemspec, path: options[:path]).execute!
+#    end
 
     # Clean up build artifacts
     def self.clean
       FileUtils.rm_r(Jim::Build::OUT_DIR) if File.exist?(Jim::Build::OUT_DIR)
+    end
+
+    # Build a .gem file from a gemspec.
+    def self.build(spec=nil)
+      if spec.nil?
+        spec, *rest = Dir.glob("*.gemspec")
+        abort "Found multiple gemspecs: #{spec}, #{rest.join(',')}" unless rest.empty?
+      end
+
+      puts Jim::Gemfile.build(spec)
     end
 
     # Print information about the gemspec in the current directory.

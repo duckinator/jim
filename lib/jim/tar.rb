@@ -27,13 +27,6 @@ module Jim
       [:_PADDING, 'Z12',  'Z12',    500],
     ]
 
-    def self.source_date_epoch
-      # The default value for SOURCE_DATE_EPOCH if not specified.
-      # We want a date after 1980-01-01, to prevent issues with Zip files.
-      # This particular timestamp is for 1980-01-02 00:00:00 GMT.
-      Time.at(ENV['SOURCE_DATE_EPOCH'] || 315_619_200).utc.freeze
-    end
-
     class UStarRecord < StringIO
       def self.open(&block)
         super { |s|
@@ -45,9 +38,14 @@ module Jim
       def self.defaults
         {
           magic: "ustar  ",
+          mode: "664",
+          oid: 1000,
+          gid: 1000,
+          uname: "user",
+          gname: "group",
           version: " ",
           checksum: "".ljust(8),
-          mtime: Jim::Tar.source_date_epoch,
+          mtime: Jim.source_date_epoch,
           typeflag: "0",
           linkname: "",
           devmajor: "\x00",
@@ -93,8 +91,6 @@ module Jim
           end
           write([contents].pack("a#{length}"))
 
-          write([nil].pack("a1024"))
-
           self.string
         }
       end
@@ -104,6 +100,7 @@ module Jim
     class UStarBuilder
       def initialize(&block)
         @io = StringIO.new
+        instance_exec(self, &block) if block
         self
       end
 
@@ -111,19 +108,32 @@ module Jim
         @io.close_write
       end
 
+      def add_file_path(path, **opts)
+        add_file(File.read(path), name: path, **opts)
+      end
+
       def add_file(contents, **opts)
         @io.write(UStarRecord.from(contents, **opts))
+        @io.flush
         self
       end
 
       def build
-        @io.write([nil].pack("a#{RECORD_SIZE - @io.pos}"))
+        length = @io.pos
+        unless (@io.pos % RECORD_SIZE).zero?
+          length += RECORD_SIZE - (@io.pos % RECORD_SIZE)
+        end
+
+        @io.write([nil].pack("a#{length}"))
+        @io.write([nil].pack("a1024")) # FIXME: Determine if this is needed.
         @io.close_write
         UStarBuilt.new(@io)
       end
     end
 
     class UStarBuilt
+      attr_reader :io
+
       def initialize(io)
         @io = io
       end
@@ -133,12 +143,14 @@ module Jim
 
         if File.extname(file) == ".gz"
           Zlib::GzipWriter.open(file) { |gz|
-            gz.mtime = Jim::Tar.source_date_epoch.to_i
+            gz.mtime = Jim.source_date_epoch.to_i
             IO.copy_stream(@io, gz)
           }
         else
           IO.copy_stream(@io, file)
         end
+
+        Pathname.new(file).expand_path.to_s
       end
     end
   end
