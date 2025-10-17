@@ -3,10 +3,6 @@ require "stringio"
 
 module Jim
   module Tar
-    def self.write(path, &block)
-      File.open(path) { UStarBuilder.new(&block) }
-    end
-
     BLOCK_SIZE = 512
     RECORD_SIZE = BLOCK_SIZE * 20
 
