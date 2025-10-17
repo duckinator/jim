@@ -10,7 +10,7 @@ module Jim
       # name      pack    unpack    offset
       [:name,     'a100', 'Z100',   0],
       [:mode,     'a8',   'A8',     100],
-      [:oid,      'a8',   'A8',     108,],
+      [:oid,      'a8',   'A8',     108],
       [:gid,      'a8',   'A8',     116],
       [:size,     'a12',  'A12',    124],
       [:mtime,    'a12',  'A12',    136],
@@ -75,6 +75,8 @@ module Jim
           [opts[name]].pack(pack)
         }.join('')
 
+        abort "??? tar header is #{header.length} bytes long ???" unless header.length == 512
+
         checksum = header.unpack('C512').sum
 
         # From wikipedia:
@@ -109,7 +111,9 @@ module Jim
       end
 
       def add_file_path(path, **opts)
-        add_file(File.read(path), name: path, **opts)
+        File.open(path, 'rb') { |f|
+          add_file(f.read, name: path, **opts)
+        }
       end
 
       def add_file(contents, **opts)
