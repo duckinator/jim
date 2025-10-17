@@ -28,6 +28,7 @@ module Jim
       [:devmajor, 'a8',   'A8',     329],
       [:devminor, 'a8',   'A8',     337],
       [:prefix,   'a155', 'Z155',   345],
+      [:_PADDING, 'Z12',  'Z12',    500],
     ]
 
     class UStarRecord < StringIO
@@ -42,13 +43,14 @@ module Jim
         {
           magic: "ustar  ",
           version: " ",
-          checksum: "",
+          checksum: "".ljust(8),
           mtime: source_date_epoch,
           typeflag: "0",
           linkname: "",
           devmajor: "\x00",
           devminor: "\x00",
           prefix: "",
+          _PADDING: nil,
         }
       end
 
@@ -75,17 +77,19 @@ module Jim
         opts[:size] = opts[:size].to_s(8).rjust(11, "0")
         opts[:mtime] = opts[:mtime].to_i.to_s(8).rjust(11, "0")
 
-        # TODO: Checksum
+        header = HEADER_INFO.map { |(name, pack, unpack, offset)|
+          [opts[name]].pack(pack)
+        }.join('')
 
-        #opts[:devmajor] = opts[:devmajor].rjust(7, "0")
-        #opts[:devminor] = opts[:devminor].rjust(7, "0")
+        checksum = header.unpack('C512').sum
+
+        # From wikipedia:
+        #   "[The checksum] is stored as a six digit octal number with
+        #    leading zeroes followed by a NUL and then a space"
+        header[148...(148 + 8)] = checksum.to_s(8).rjust(6, "0") + "\x00 "
 
         self.open {
-          HEADER_INFO.map { |(name, pack, unpack, offset)|
-            write([opts[name]].pack(pack))
-          }
-
-          write([nil].pack("Z12"))
+          write(header)
 
           length = contents.length
           unless (contents.length % BLOCK_SIZE).zero?
