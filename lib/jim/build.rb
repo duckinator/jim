@@ -1,76 +1,73 @@
-require "fileutils"
-require "pathname"
-require "tmpdir"
+require_relative "tar"
+require "yaml"
+require "zlib"
 
 module Jim
-  class BuildError < StandardError; end
-
   class Build
-    OUT_DIR = "dist"
+    BUILD_DIR = "build"
 
-    def initialize(gemspec, path: nil)
-      @gemspecs = [*(gemspec || find_gemspecs)]
-      @path = path
+    CHECKSUMS_FILE = "checksums.yaml.gz"
+    DATA_FILE = "data.tar.gz"
+    METADATA_FILE = "metadata.gz"
 
-      raise BuildError, "no gemspec found" if @gemspecs.empty?
+    CHECKSUMS_PATH = File.join(BUILD_DIR, CHECKSUMS_FILE)
+    DATA_PATH = File.join(BUILD_DIR, DATA_FILE)
+    METADATA_PATH = File.join(BUILD_DIR, METADATA_FILE)
+
+    def self.sha256(file)
+      Digest::SHA256.hexdigest File.read(file)
     end
 
-    def execute!
-      @gemspecs.map(&method(:build))
+    def self.sha512(file)
+      Digest::SHA512.hexdigest File.read(file)
     end
 
-    def with_path(&block)
-      if @path
-        Dir.chdir(@path, &block)
-      else
-        yield
-      end
-    end
-    private :with_path
+    def self.build(spec)
+      spec = Jim.load_spec(spec) if spec.is_a?(String)
 
-    def find_gemspecs
-      with_path { Dir['*.gemspec'] }
-    end
-    private :find_gemspecs
+      filename = "#{spec.name}-#{spec.version}.gem"
 
-    def output_file_for_spec(spec)
-      with_path {
-        Pathname.new(OUT_DIR)
-          .join("#{spec.name}-#{spec.version}.gem")
-          .expand_path
-      }
-    end
+      Dir.mkdir(BUILD_DIR)
 
-    def build(gemspec)
-      source_dir = with_path { Dir.pwd }
-      spec = Jim.load_spec(gemspec)
-      out_file = output_file_for_spec(spec)
-      out_dir = out_file.dirname
-
-      Dir.mktmpdir(["jim", spec.name]) { |dir|
-        puts "Working directory: #{dir}"
-        puts
-        Dir.chdir(dir) {
-          puts "Building #{out_file.basename}..."
-          build_here(source_dir, spec, out_file)
-
-          puts "Creating #{out_dir}..."
-          out_dir.mkpath
-
-          puts "Moving built gem to final location..."
-          FileUtils.mv(out_file.basename, out_file)
+      Jim::Tar::UStarBuilder.new { |d|
+        spec.files.each { |f|
+          d.add_file_path(f)
         }
-      }
-      puts
-      puts "Name:    #{spec.name}"
-      puts "Version: #{spec.version}"
-      puts
-      puts "Output:  #{out_file}"
-    end
-    private :build
+      }.build.save(DATA_PATH)
 
-    def build_here(source_dir, spec, out_file)
-      File.write(out_file.basename, "FIXME")
+      Zlib::GzipWriter.open(METADATA_PATH) { |gz|
+        gz.mtime = Jim.source_date_epoch.to_i
+        gz.write(
+          YAML.dump(spec.to_h)
+            .gsub(/\A---$/, '--- !ruby/object:Gem::Specification')
+            .gsub(/^required_(ruby|rubygems)_version:$/, '\1: !ruby/object:Gem::Requirement')
+            .gsub(/^version:$/, 'version: !ruby/object:Gem::Version')
+        )
+      }
+
+      checksums = {
+        "SHA256" => {
+          "metadata.gz" => self.sha256(METADATA_PATH),
+          "data.tar.gz" => self.sha256(DATA_PATH),
+        },
+        "SHA512" => {
+          "metadata.gz" => self.sha512(METADATA_PATH),
+          "data.tar.gz" => self.sha512(DATA_PATH),
+        },
+      }
+      Zlib::GzipWriter.open(CHECKSUMS_PATH) { |gz|
+        gz.mtime = Jim.source_date_epoch.to_i
+        gz.write YAML.dump(checksums)
+      }
+
+      Dir.chdir(BUILD_DIR) {
+        Jim::Tar::UStarBuilder.new
+          .add_file_path(CHECKSUMS_FILE)
+          .add_file_path(DATA_FILE)
+          .add_file_path(METADATA_FILE)
+          .build
+          .save(filename)
+      }
     end
   end
 end
