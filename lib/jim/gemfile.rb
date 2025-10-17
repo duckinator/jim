@@ -26,17 +26,22 @@ module Jim
 
       Zlib::GzipWriter.open("build/metadata.gz") { |gz|
         gz.mtime = Jim.source_date_epoch.to_i
-        gz.write YAML.dump(spec.to_h)
+        gz.write(
+          YAML.dump(spec.to_h)
+            .gsub(/\A---$/, '--- !ruby/object:Gem::Specification')
+            .gsub(/^required_(ruby|rubygems)_version:$/, '\1: !ruby/object:Gem::Requirement')
+            .gsub(/^version:$/, 'version: !ruby/object:Gem::Version')
+        )
       }
 
       checksums = {
-        SHA256: {
-          "metadata.gz": self.sha256("build/metadata.gz"),
-          "data.tar.gz": self.sha256("build/data.tar.gz"),
+        "SHA256" => {
+          "metadata.gz" => self.sha256("build/metadata.gz"),
+          "data.tar.gz" => self.sha256("build/data.tar.gz"),
         },
-        SHA512: {
-          "metadata.gz": self.sha512("build/metadata.gz"),
-          "data.tar.gz": self.sha512("build/data.tar.gz"),
+        "SHA512" => {
+          "metadata.gz" => self.sha512("build/metadata.gz"),
+          "data.tar.gz" => self.sha512("build/data.tar.gz"),
         },
       }
       Zlib::GzipWriter.open("build/checksums.yaml.gz") { |gz|

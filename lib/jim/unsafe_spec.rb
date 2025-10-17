@@ -8,7 +8,7 @@ module Jim
     HashOfStringToString = Jim::TypedHash(String, String)
     HashOfStringToAOS = Jim::TypedHash(String, ArrayOfStrings)
 
-    @@accessors = [:metadata]
+    @@accessors = [:metadata, :specification_version]
 
     def self.string_accessor(name)
       @@accessors << name
@@ -67,6 +67,7 @@ module Jim
     array_of_strings_accessor :rdoc_options
 
     def initialize(&block)
+      @specification_version = 4
       @metadata = HashOfStringToString.new
       @runtime_dependencies = HashOfStringToAOS.new
       @dev_dependencies = HashOfStringToAOS.new
@@ -101,7 +102,25 @@ module Jim
     end
 
     def to_h
-      @@accessors.map { |k, v| [k, instance_variable_get(:"@#{k}")] }.to_h
+      @@accessors.map { |k, v|
+        value = instance_variable_get(:"@#{k}")
+        value = value.to_h if value.is_a?(Hash)
+
+        if [:required_ruby_version, :required_rubygems_version].include?(k) && value.is_a?(String)
+          operator, version = value.strip.split(' ', 2).map(&:strip)
+          value = {
+            'requirements' => [
+              [operator, {'version' => version}]
+            ]
+          }
+        end
+
+        if k == :version
+          value = {'version' => value}
+        end
+
+        [k.to_s, value]
+      }.to_h
     end
 
     def inspect
