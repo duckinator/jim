@@ -1,34 +1,70 @@
-# Jim
+# `jim`, a build and release tool for pure-Ruby gems
 
-TODO: Delete this and the text below, and describe your gem
+> jim likes gems very much and would like to help you with them.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/jim`. To experiment with that code, run `bin/console` for an interactive prompt.
+`jim` is an a minimal tool for building and (eventually) publishing pure-Ruby gems.
+
+Features:
+- can sign in to a gem host (`jim signin`).
+- can build a gem _and clean up after itself_ (`jim build` / `jim clean`).
+- will eventually be able to publish gems.
+
+Things `jim` is not going to do:
+- jim will not support gems with native extensions.
+- jim will not handle every edge case.
+- jim will not manage locally-installed gems.
+
+If you like `jim` and use Python, be sure to check out [bork](https://github.com/duckinator/bork).
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+I'm hoping to provide single-file executables that bundle the entire gem,
+akin to [Python's ZipApps](https://docs.python.org/3/library/zipapp.html).
 
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
-```
-
-If bundler is not being used to manage dependencies, install the gem by executing:
-
-```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
-```
+<!-- You can [download the latest release](https://github.com/duckinator/jim/releases/latest/download/jim.rbz]. -->
 
 ## Usage
 
-TODO: Write usage instructions here
+The basic commands you will need are:
+- `jim signin` / `jim signout`: sign in or out of a gem host.
+- `jim build`: build a gem, with the output in `./build/`.
+- `jim clean`: removes things created by `jim build`.
+
+Eventually, there will also be:
+- `jim push`: push the specified gem to the configured host.
+
+### Example Usage
+
+```console
+puppy@cerberus:~/okay$ jim signin
+Username: duckinator
+Password: 
+OTP: 
+Please choose which scopes you want your API key to have:
+index_rubygems? [Y/n] 
+push_rubygem? [y/N] y
+yank_rubygem? [y/N] 
+Saved key with name "jim--cerberus-puppy-2025-10-25T152604" and scopes:
+- index_rubygems
+- push_rubygem
+puppy@cerberus:~/okay$ jim build
+
+Name:    okay
+Version: 12.0.4
+
+Output:  /home/puppy/okay/build/okay-12.0.4.gem
+puppy@cerberus:~/okay$ gem list | grep okay
+puppy@cerberus:~/okay$ gem install build/okay-12.0.4.gem 
+Successfully installed okay-12.0.4
+1 gem installed
+puppy@cerberus:~/okay$
+```
 
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, (TODO).
 
 ## Contributing
 
