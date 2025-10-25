@@ -5,9 +5,10 @@
 `jim` is an a minimal tool for building and (eventually) publishing pure-Ruby gems.
 
 Features:
-- can sign in to a gem host (`jim signin`).
-- can build a gem _and clean up after itself_ (`jim build` / `jim clean`).
-- will eventually be able to publish gems.
+- signs in to a gem host
+- builds gems
+- cleans up after itself (if you ask it to)
+- will eventually be able to publish gems
 
 Things `jim` is not going to do:
 - jim will not support gems with native extensions.
