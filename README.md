@@ -1,8 +1,6 @@
 # `jim`, a build and release tool for pure-Ruby gems
 
-> jim likes gems very much and would like to help you with them.
-
-`jim` is an a minimal tool for building and (eventually) publishing pure-Ruby gems.
+`jim` is a minimal tool for building and (eventually) publishing pure-Ruby gems.
 
 Features:
 - signs in to a gem host
