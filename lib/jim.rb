@@ -32,7 +32,7 @@ module Jim
       # Create a wrapper module named `Gem` for compatibility.
       mod.const_set(:Gem, Module.new {|gem_mod|
         # Clone the UnsafeSpec class.
-        spec_cls = UnsafeSpec.clone
+        spec_cls = Class.new(UnsafeSpec)
         # For *that clone specifically*, set @@extract_spec_fn to the lambda.
         spec_cls.class_variable_set(:@@extract_spec_fn, extract_spec)
         # Inside our fake `Gem` module, shove our fake `Specification` class.

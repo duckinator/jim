@@ -73,7 +73,7 @@ module Jim
       @dev_dependencies = HashOfStringToAOS.new
 
       yield self
-      @@extract_spec_fn.call(self)
+      self.class.class_variable_get(:@@extract_spec_fn).call(self)
     end
 
     def metadata
