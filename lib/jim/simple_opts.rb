@@ -11,8 +11,8 @@ module Jim
     class SimpleOptsError < StandardError; end
     class UnexpectedArgument < SimpleOptsError; end
 
-    def initialize(*args, banner: nil, defaults: nil)
-      super(*args)
+    def initialize(banner: nil, defaults: nil)
+      super()
       @okay_options = defaults || {}
 
       self.banner = banner unless banner.nil?
