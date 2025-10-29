@@ -41,11 +41,11 @@ module Jim
     def []=(key, val);  super(key, check(val)); end
 
     def push(*vals)
-      super(vals.map {|v| check(v) })
+      super(*vals.map {|v| check(v) })
     end
 
     def unshift(*vals)
-      super(vals.map {|v| check(v) })
+      super(*vals.map {|v| check(v) })
     end
   end
 
