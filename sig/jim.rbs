@@ -1,4 +1,318 @@
+# WHY DO I NEED TO DO THIS?
+class IO
+  def noecho: () { (untyped) -> untyped } -> untyped
+end
+
+module Jim
+  class Build
+    BUILD_DIR: String
+    CHECKSUMS_FILE: String
+    DATA_FILE: String
+    METADATA_FILE: String
+    CHECKSUMS_PATH: untyped
+    DATA_PATH: untyped
+    METADATA_PATH: untyped
+    def self.sha256: (untyped file) -> untyped
+    def self.sha512: (untyped file) -> untyped
+    def self.build: (untyped spec) -> untyped
+  end
+end
+
+module Jim
+  class Client
+    @base_uri: untyped
+
+    def initialize: (untyped base_uri) -> void
+    def sign_in: (untyped username, untyped password, ?untyped? otp) -> untyped
+    def update_scopes: () -> nil
+
+    private
+    def get: (untyped endpoint, **untyped kwargs) -> untyped
+    def post: (untyped endpoint, **untyped kwargs) -> untyped
+  end
+end
+
+module Jim
+  module Cli
+    extend Jim::Console
+    METHODS: ::Array[String]
+
+    def self.run: () -> untyped
+
+    def self.config: (untyped command, untyped setting, ?untyped? value) -> untyped
+
+    # Sign in to the specified gem server.
+    def self.signin: (*untyped args) -> untyped
+
+    # Sign out from configured gem host
+    def self.signout: () -> untyped
+
+    # Builds a Gem from the provided gemspec.
+    def self.build: (*untyped args) -> untyped
+
+    # Clean up build artifacts
+    def self.clean: () -> (untyped | nil)
+
+    # Print information about the gemspec in the current directory.
+    def self.gemspec: (?untyped? spec) -> untyped
+
+    # Print this help text.
+    def self.help: () -> untyped
+
+    def self.help_text: (untyped prefix, untyped method_name, ?summary: bool) -> ::Array[::String | untyped]
+
+    def self.subcommand_summaries: (untyped prefix, untyped methods) -> untyped
+  end
+end
+
+module Jim
+  class ConfigError < StandardError
+  end
+
+  class Config
+    self.@key: untyped
+
+    CONFIG_FILE_NAME: String
+    KEY_FILE_NAME: String
+    CONFIG_DIR: String
+    CONFIG_FILE: String
+    KEY_FILE: String
+
+    def self.save_api_key: (untyped name, untyped server, untyped key, untyped scopes, untyped needs_mfa) -> untyped
+    def self.api_key: () -> untyped
+    def self.load_api_key: () -> untyped
+    def self.delete_api_key: () -> untyped
+    def self.has_api_key: () -> untyped
+    def self.try_load_api_key: () -> (untyped | nil)
+  end
+end
+
+module Jim
+  module Console
+    def prompt: (untyped msg, ?untyped? default, ?noecho: bool) -> untyped
+  end
+end
+
+module Net
+  class HTTPExceptions
+  end
+
+  class HTTPResponse
+    def okay?: () -> bool
+    def or_raise!: () -> self
+    def from_json: () -> (nil | untyped)
+    def value: () -> untyped
+    def body: () -> untyped
+  end
+end
+
+module Jim
+  module HTTP
+    class RedirectLimitError < StandardError
+    end
+
+    DEFAULT_REDIRECT_LIMIT: Integer
+
+    def self.get: (untyped url, ?parameters: ::Hash[untyped, untyped]?,
+                    ?headers: ::Hash[untyped, untyped]?, ?basic_auth: untyped) -> untyped
+
+    def self.post: (untyped url, ?data: untyped?, ?form_data: untyped?, ?headers: ::Hash[untyped, untyped], ?basic_auth: untyped?) -> untyped
+
+    # Helper method for actually creating a request.
+    #
+    # @param http_method [Symbol] A symbol representing the class name for
+    #   +Net::HTTP+. E.g., +:Get+ for GET requests, +:Post+ for POST, etc.
+    # @param url [String] URL for the request.
+    # @param parameters [Hash, nil] Request parameters (for the query string).
+    # @param body [String, nil] Request body.
+    # @param redirect_limit [Numeric] The maximum number of redirects allowed.
+    def self.send_request: (Symbol http_method,
+                            String url,
+                            Hash[untyped, untyped] ?parameters,
+                            String ?body,
+                            Hash[untyped, untyped] ?headers,
+                            ?Hash[untyped, untyped] ?basic_auth,
+                            ?Integer redirect_limit) -> untyped
+  end
+end
+
+module Jim
+  module Platform
+    def self.host_os: () -> untyped
+    def self.windows?: () -> untyped
+    def self.linux?: () -> untyped
+    def self.macos?: () -> untyped
+    def self.bsd?: () -> untyped
+    def self.solaris?: () -> untyped
+    def self.unixy?: () -> untyped
+  end
+end
+
+module Jim
+  class Error < StandardError
+  end
+
+  # Given a path to a gemspec, which contains arbitrary code of dubious provenance,
+  # run the code in a way that can returns the Jim::UnsafeSpec instance
+  # created by the Gem::Specification.new {...} call.
+  #
+  # That is to say, if you have jim.gemspec containing:
+  #     Gem::Specification.new do |spec|
+  #       spec.name = "foo"
+  #     end
+  #
+  # You get a Jim::UnsafeSpec returned, even though you have to use `load`,
+  # and `load` always returns a boolean.
+  #
+  # This is truly cursed. I hate everything about this.
+  # It's also the least-cursed option I could think of.
+  def self.load_spec: (untyped gemspec) -> untyped
+
+  def self.source_date_epoch: () -> untyped
+
+  def self.cli: () -> untyped
+end
+
+module Jim
+  #
+  # An OptionParser wrapper providing a few convenience functions.
+  class SimpleOpts < ::OptionParser
+    @okay_options: untyped
+
+    class SimpleOptsError < StandardError
+    end
+
+    class UnexpectedArgument < SimpleOptsError
+    end
+
+    # Defined in SimpleOpts.
+    def initialize: (?banner: untyped?, ?defaults: untyped?) -> void
+    def parse_and_consume_all!: (untyped args) -> untyped
+    def parse_with_args: (untyped args) -> ::Array[untyped]
+    def simple: (*untyped args) -> untyped
+
+    # SimpleOpts dramatically simplifies the OptionParser#parse type signature.
+    def parse: (untyped args) -> untyped
+  end
+end
+
+module Jim
+  module Tar
+    BLOCK_SIZE: 512
+
+    RECORD_SIZE: untyped
+
+    HEADER_INFO: Array[Array[untyped]]
+
+    class UStarRecord < StringIO
+      def self.open: () { (?) -> untyped } -> String
+      def self.defaults: () -> untyped
+      def self.load: (untyped file) -> untyped
+      def self.from: (String contents, **untyped opts) -> String
+    end
+
+    # Write files in the UStar (_Unix Standard TAR_) format.
+    class UStarBuilder
+      @io: StringIO
+      def initialize: () ?{ (?) -> untyped } -> void
+      def close_write: () -> nil
+      def add_file_path: (untyped path, **untyped opts) -> self
+      def add_file: (untyped contents, **untyped opts) -> self
+      def build: () -> UStarBuilt
+    end
+
+    class UStarBuilt
+      @io: IO | StringIO
+      attr_reader io: IO | StringIO
+
+      def initialize: ((IO | StringIO) io) -> void
+      def save: (untyped file) -> untyped
+    end
+  end
+end
+
+module Jim
+  class TypedArray < ::Array[untyped]
+    class TypedArrayError < TypeError
+      def initialize: (untyped val_cls, untyped val) -> void
+    end
+
+    attr_reader self.value_class: untyped
+
+    def self.from: (untyped val) -> untyped
+    def check: (untyped val) -> untyped
+    def initialize: (Array[untyped] ary) -> void
+    def []=: (untyped key, untyped val) -> untyped
+    #def push: (untyped val) -> untyped
+    #def unshift: (untyped val) -> untyped
+  end
+
+  def self.TypedArray: (untyped value_class) -> untyped
+end
+
+module Jim
+  class TypedHash < ::Hash[untyped, untyped]
+    class TypedHashError < TypeError
+    end
+
+    attr_accessor self.key_class: untyped
+    attr_accessor self.value_class: untyped
+    def self.from: (untyped val) -> untyped
+  end
+
+  def self.TypedHash: (untyped key_class, untyped value_class) -> untyped
+end
+
 module Jim
   VERSION: String
-  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+  class SpecError < StandardError
+  end
+
+  class UnsafeSpec
+    @@accessors: untyped
+    @specification_version: untyped
+    @metadata: untyped
+    @runtime_dependencies: untyped
+    @dev_dependencies: untyped
+    ArrayOfStrings: untyped
+    HashOfStringToString: untyped
+    HashOfStringToAOS: untyped
+    def self.string_accessor: (untyped name) -> untyped
+    def self.array_accessor: (untyped name) -> untyped
+    def self.string_or_array_accessor: (untyped name) -> untyped
+    def self.array_of_strings_accessor: (untyped name) -> untyped
+
+    def initialize: () { (untyped) -> untyped } -> void
+    def metadata: () -> untyped
+    def metadata=: (untyped value) -> untyped
+    def author=: (untyped author) -> untyped
+    def license=: (untyped license) -> untyped
+
+
+    def authors=: (Array[String]) -> Array[String]
+    def files=: (Array[String]) -> Array[String]
+    #string_accessor :name
+    #string_accessor :summary
+    #string_accessor :description
+    #string_accessor :homepage
+    #string_or_array_accessor :email
+    def licenses=: (Array[String]) -> Array[String]
+    #string_accessor :bindir
+    def executables=: (Array[String]) -> Array[String]
+    def require_paths=: (Array[String]) -> Array[String]
+    #string_accessor :required_ruby_version
+    #string_accessor :version
+    #array_of_strings_accessor :extra_rdoc_files
+    #array_of_strings_accessor :rdoc_options
+
+
+    def add_dependency: (untyped gem_name, *untyped requirements) -> untyped
+    alias add_runtime_dependency add_dependency
+
+    def add_development_dependency: (untyped gem_name, *untyped requirements) -> untyped
+
+    def to_h: () -> ::Hash[untyped, untyped]
+    def inspect: () -> ::String
+  end
 end

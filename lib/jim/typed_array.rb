@@ -39,8 +39,14 @@ module Jim
       ary.each { |v| self.push(v) }
     end
     def []=(key, val);  super(key, check(val)); end
-    def push(val);      super(check(val));      end
-    def unshift(val);   super(check(val));      end
+
+    def push(*vals)
+      super(vals.map {|v| check(v) })
+    end
+
+    def unshift(*vals)
+      super(vals.map {|v| check(v) })
+    end
   end
 
   def self.TypedArray(value_class)
