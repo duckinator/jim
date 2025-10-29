@@ -156,38 +156,25 @@ module Jim
     end
 
     # Build and release a gem.
-    def self.release(*args)
-      opts = SimpleOpts.new(
-        banner: "Usage: jim release [--pack] [--github] [--host HOST]",
-      )
-
-      opts.simple("--pack",
-                  "When releasing to GitHub, include the packed version.",
-                  :pack)
-
-      opts.simple("--github",
-                  "Release to Github.",
-                  :github)
-
-      opts.simple("--host HOST",
-                  "Gem host to push to.",
-                  :host)
-
-      opts.simple("-h", "--help",
-                  "Show this help message and exit",
-                  :help)
-
-      options, args = opts.parse_with_args(args)
-
-      return puts opts if options[:help] || !args.empty?
-
+    def self.release
       spec = load_spec_or_abort!
 
-      packed_file = self.pack("--quiet") if options[:pack]
+      packed_file = self.pack("--quiet")
       gem_file = self.build("--quiet")
 
+      github_repo = spec.metadata["jim/github_repo"]
+      gem_host = spec.metadata["jim/gem_host"]
+
+      unless github_repo
+        warn 'No GitHub repo specified. Set spec.metadata["jim/github_repo"] in your gemspec to release to GitHub.'
+      end
+
+      unless gem_host
+        warn 'No gem host specified. Set spec.metadata["jim/gem_host"] in your gemspec to release to a gem host.'
+      end
+
       gh_release =
-        if options[:github]
+        if github_repo
           token = ENV["JIM_GITHUB_TOKEN"]
           abort "error: Expected JIM_GITHUB_TOKEN to be defined" if token.nil? || token.emtpy?
           github_repo = spec.metadata["github_repo"]
@@ -198,18 +185,13 @@ module Jim
             abort "error: Expected spec.metadata[\"github_repo\"] to be of the format \"owner/repo\", got #{github_repo.inspect}"
           end
 
-          assets = []
-
-          assets << packed_file if packed_file
-          assets << gem_file
-
-          assets = assets.map { |f| [f, Pathname(f).basename] }.to_h
+          assets = [packed_file, gem_file].map { |f| [f, Pathname(f).basename] }.to_h
 
           gh = Jim::GithubApi.new(owner, repo, spec.name, token.strip)
           gh.create_release(spec.version, assets: assets)
         end
 
-      puts "FIXME: Actually publish #{gem_file}"
+      puts "FIXME: Actually publish #{gem_file} to #{gem_host}" if gem_host
 
       if options[:github]
         puts "Publishing GitHub release."
