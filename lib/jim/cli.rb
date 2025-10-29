@@ -130,7 +130,6 @@ module Jim
 
       out_file = Dir.chdir(options[:path]) { Jim::Build.build(spec) }
 
-      puts
       puts "Name:    #{spec.name}"
       puts "Version: #{spec.version}"
       puts
