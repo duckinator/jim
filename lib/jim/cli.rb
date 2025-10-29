@@ -176,7 +176,7 @@ module Jim
       gh_release =
         if github_repo
           token = ENV["JIM_GITHUB_TOKEN"]
-          abort "error: Expected JIM_GITHUB_TOKEN to be defined" if token.nil? || token.emtpy?
+          abort "error: Expected JIM_GITHUB_TOKEN to be defined" if token.nil? || token.empty?
           github_repo = spec.metadata["github_repo"]
           abort "error: Expected spec.metadata[\"github_repo\"] to be defined in gemspec" if github_repo.nil?
 
