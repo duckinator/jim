@@ -32,8 +32,8 @@ module Jim
           else
             print "#{k}? [y/N] "
           end
-          result = STDIN.gets.strip.downcase
-        end until ['y', 'n', ''].include?(result)
+          result = STDIN.gets&.strip&.downcase
+        end until result && ['y', 'n', ''].include?(result)
         scopes[k] = (result == 'y') || (result.empty? && scopes[k])
       end
 
@@ -57,12 +57,12 @@ module Jim
     def update_scopes
     end
 
-    private def get(endpoint, *args, **kwargs)
-      Jim::HTTP.get(@base_uri + endpoint, *args, **kwargs)
+    private def get(endpoint, **kwargs)
+      Jim::HTTP.get(@base_uri + endpoint, **kwargs)
     end
 
-    private def post(endpoint, *args, **kwargs)
-      Jim::HTTP.post(@base_uri + endpoint, *args, **kwargs)
+    private def post(endpoint, **kwargs)
+      Jim::HTTP.post(@base_uri + endpoint, **kwargs)
     end
   end
 end
