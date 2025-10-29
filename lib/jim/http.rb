@@ -115,7 +115,7 @@ module Jim
 
       # Net::HTTP.start() keeps a connection to the host alive
       # for all requests that occur inside the block.
-      Net::HTTP.start(host, uri.port, options) do |http| # steep:ignore
+      Net::HTTP.start(host, uri.port, options) do |http| # steep:ignore ArgumentTypeMismatch
 
         # Get a reference to the class for the specified request type.
         # E.g., if it's a post request, this returns Net::HTTP::Post.
@@ -149,7 +149,7 @@ module Jim
             new_url = new_uri.to_s
           elsif new_url.start_with?(".")
             new_uri = uri.dup
-            new_uri.path += "/" + response["location"]
+            new_uri.path += "/" + response["location"] # steep:ignore NoMethod
             new_url = new_uri.to_s
           end
           send_request(:Get, new_url, parameters, body, headers, basic_auth,
