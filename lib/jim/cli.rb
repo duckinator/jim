@@ -177,8 +177,6 @@ module Jim
         if github_repo
           token = ENV["JIM_GITHUB_TOKEN"]
           abort "error: Expected JIM_GITHUB_TOKEN to be defined" if token.nil? || token.empty?
-          github_repo = spec.metadata["github_repo"]
-          abort "error: Expected spec.metadata[\"github_repo\"] to be defined in gemspec" if github_repo.nil?
 
           owner, repo = github_repo.split("/")
           if repo.nil?
