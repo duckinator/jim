@@ -3,13 +3,14 @@ require_relative "build"
 require_relative "client"
 require_relative "config"
 require_relative "console"
+require_relative "packer"
 require_relative "simple_opts"
 
 module Jim
   module Cli
     extend Jim::Console
 
-    METHODS = %w[signin signout build clean gemspec help]
+    METHODS = %w[signin signout build clean gemspec help pack]
 
     def self.run
       ARGV[0] = "help" if %w[--help -h].include?(ARGV[0])
@@ -20,6 +21,23 @@ module Jim
         help
         exit 1
       end
+    end
+
+    # Pack a gem into a single file.
+    def self.pack
+      spec_file, *rest = Dir.glob("*.gemspec")
+      abort "Found multiple gemspecs: #{spec_file}, #{rest.join(',')}" unless rest.empty?
+
+      spec = Jim.load_spec(spec_file)
+
+      unless spec.executables.length == 1
+        abort "error: expected only one executable specified in #{spec_file}, found:\n- #{spec.executables.join("\n- ")}"
+      end
+
+      contents = Packer.pack(spec)
+
+      FileUtils.mkdir_p("build/pack")
+      File.write("build/pack/#{spec.name}.rb", contents)
     end
 
 #    def self.config(command, setting, value=nil)
@@ -114,6 +132,8 @@ module Jim
       puts "Version: #{spec.version}"
       puts
       puts "Output:  #{out_file}"
+
+      out_file
     end
 
     # Clean up build artifacts
@@ -152,7 +172,15 @@ module Jim
 
       comment_line = line - 1
 
-      comment = Prism.parse_file_comments(file).filter { |c|
+      # Slight kludge for packed script, since I don't want to monkeypatch Prism.
+      comments =
+        if $JIM_DATA
+          Prism.parse_comments($JIM_DATA["files"][file])
+        else
+          Prism.parse_file_comments(file)
+        end
+
+      comment = comments.filter { |c|
         c.location.start_line == comment_line
       }.first&.slice
 
