@@ -21,12 +21,19 @@ module Jim
 
       def from(val)
         raise TypedHashError, "expected Hash, got #{val.class}" unless val.is_a?(Hash)
-        new(val).merge(val)
+        new().merge(val)
       end
     end
 
-    def merge(other)
-      other.map { |k, v| self[k] = v }
+    def merge(*others)
+      self.clone.merge!(*others)
+    end
+
+    def merge!(*others)
+      others.map do |other|
+        other.map { |k, v| self[k] = v }
+      end
+      self
     end
 
     def []=(key, val)

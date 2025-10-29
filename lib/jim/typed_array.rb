@@ -34,9 +34,9 @@ module Jim
       val
     end
 
-    def initialize(*args)
-      super(*args)
-      self.length.times { |i| self[i] = self[i] }
+    def initialize(ary)
+      super()
+      ary.each { |v| self.push(v) }
     end
     def []=(key, val);  super(key, check(val)); end
     def push(val);      super(check(val));      end

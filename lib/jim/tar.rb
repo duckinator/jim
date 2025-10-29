@@ -30,7 +30,7 @@ module Jim
     class UStarRecord < StringIO
       def self.open(&block)
         super { |s|
-          s.instance_exec(&block)
+          s.instance_eval(&block)
           s.string
         }
       end
