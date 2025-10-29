@@ -94,7 +94,6 @@ module Jim
         "draft" => draft,
         "prerelease" => prerelease,
       }
-      p request
       url = "/repos/#{owner}/#{repo}/releases"
       response = api_post(url, request)
 
