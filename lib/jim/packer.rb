@@ -27,14 +27,15 @@ module Jim
         $PACKED_BY_JIM = #{spec.name.inspect}
         $JIM_DATA = JSON.load(DATA)
 
+        $JIM_DEBUG = ENV['JIM_DEBUG']
+
         module Kernel
-          alias_method :jim_orig_require_relative, :require_relative
           def jim_require_relative(path, relative_to)
             base_dir = Pathname(relative_to).dirname
             full_path = Pathname(base_dir).join(path).sub_ext(".rb").to_s
 
             if $JIM_DATA["files"].keys.include?(full_path)
-              puts "Loading packed " + full_path + "..."
+              puts "Loading packed " + full_path + "..." if $JIM_DEBUG
               unless $JIM_LOADED.include?(full_path)
                 eval($JIM_DATA["files"][full_path], binding, full_path, 0)
                 $JIM_LOADED.push(full_path)
@@ -55,7 +56,7 @@ module Jim
               combined = Pathname(req_path).join(path).sub_ext(".rb").to_s
               $JIM_LOADED ||= []
               if $JIM_DATA["files"].keys.include?(combined)
-                puts "Loading packed " + combined + "..."
+                puts "Loading packed " + combined + "..." if $JIM_DEBUG
                 unless $JIM_LOADED.include?(combined)
                   eval($JIM_DATA["files"][combined], binding, combined, 0)
                   $JIM_LOADED.push(combined)
