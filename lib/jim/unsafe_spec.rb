@@ -10,6 +10,10 @@ module Jim
 
     @@accessors = [:metadata, :specification_version]
 
+    # steep:ignore:start
+    # The aggressive amount of metaprogramming here confuses Steep
+    # about whether or not raise and instance_variable_set exist.
+
     def self.string_accessor(name)
       @@accessors << name
       attr_reader(name)
@@ -49,6 +53,8 @@ module Jim
         instance_variable_set(:"@#{name}", ArrayOfStrings.from(value))
       }
     end
+
+    # steep:ignore:end
 
     array_accessor :authors
     array_accessor :files
