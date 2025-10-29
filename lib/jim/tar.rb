@@ -84,16 +84,16 @@ module Jim
         #    leading zeroes followed by a NUL and then a space"
         header[148...(148 + 8)] = checksum.to_s(8).rjust(6, "0") + "\x00 "
 
-        self.open {
-          write(header)
+        self.open { |io|
+          io.write(header)
 
           length = contents.length
           unless (contents.length % BLOCK_SIZE).zero?
             length += BLOCK_SIZE - (contents.length % BLOCK_SIZE)
           end
-          write([contents].pack("a#{length}"))
+          io.write([contents].pack("a#{length}"))
 
-          self.string
+          io.string
         }
       end
     end
