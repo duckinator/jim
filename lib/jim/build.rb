@@ -1,4 +1,5 @@
 require_relative "tar"
+require "digest"
 require "yaml"
 require "zlib"
 
