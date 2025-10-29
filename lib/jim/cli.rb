@@ -143,6 +143,8 @@ module Jim
     end
 
     def self.help_text(prefix, method_name, summary: false)
+      require 'prism'
+
       method_obj = method(method_name)
 
       file, line = method_obj.source_location
@@ -160,8 +162,6 @@ module Jim
     end
 
     def self.subcommand_summaries(prefix, methods)
-      require 'prism'
-
       comments = methods.map { |m| help_text(prefix, m, summary: true) }.to_h
 
       # Take the longest name, and add 4 for spacing.
