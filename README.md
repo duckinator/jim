@@ -7,6 +7,7 @@ Features:
 - builds gems
 - cleans up after itself (if you ask it to)
 - will eventually be able to publish gems
+- packing an entire (pure-Ruby) gem into a single file
 
 Things `jim` is not going to do:
 - jim will not support gems with native extensions.
@@ -28,6 +29,9 @@ The basic commands you will need are:
 - `jim signin` / `jim signout`: sign in or out of a gem host.
 - `jim build`: build a gem, with the output in `./build/`.
 - `jim clean`: removes things created by `jim build`.
+
+More advanced features:
+- `jim pack`: pack an entire gem into `./build/pack/#{gem_name}.rb`.
 
 Eventually, there will also be:
 - `jim push`: push the specified gem to the configured host.
@@ -57,6 +61,37 @@ puppy@cerberus:~/okay$ gem install build/okay-12.0.4.gem
 Successfully installed okay-12.0.4
 1 gem installed
 puppy@cerberus:~/okay$
+```
+
+### Packed Gems
+
+Packing a gem creates a single Ruby file that contains the entirety of a gem.
+
+Your gem needs to:
+- be pure Ruby
+- have a single gemspec in the directory you run `jim` from
+- have a single executable specified in your gemspec
+
+When you run `jim pack`, creates a pure-Ruby unpacker, and appends a JSON object to the end of it.
+
+```console
+~/jim$ ruby -Ilib exe/jim pack
+build/pack/jim.rb
+~/jim$ mv build/pack/jim.rb ~/jim.rb
+~/jim$ chmod +x ~/jim.rb
+~/jim$ cd ~
+~$ ./jim.rb
+Usage: jim [COMMAND] [OPTIONS] [ARGS...]
+
+Commands
+  jim signin
+  jim signout
+  jim build
+  jim clean
+  jim gemspec
+  jim help
+  jim pack
+~$
 ```
 
 ## Development
