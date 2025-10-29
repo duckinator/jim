@@ -1,34 +1,29 @@
-# WHY DO I NEED TO DO THIS?
-class IO
-  def noecho: () { (untyped) -> untyped } -> untyped
-end
-
 module Jim
   class Build
     BUILD_DIR: String
     CHECKSUMS_FILE: String
     DATA_FILE: String
     METADATA_FILE: String
-    CHECKSUMS_PATH: untyped
-    DATA_PATH: untyped
-    METADATA_PATH: untyped
-    def self.sha256: (untyped file) -> untyped
-    def self.sha512: (untyped file) -> untyped
-    def self.build: (untyped spec) -> untyped
+    CHECKSUMS_PATH: String
+    DATA_PATH: String
+    METADATA_PATH: String
+    def self.sha256: (String file) -> String
+    def self.sha512: (String file) -> String
+    def self.build: (String spec) -> String
   end
 end
 
 module Jim
   class Client
-    @base_uri: untyped
+    @base_uri: String
 
-    def initialize: (untyped base_uri) -> void
-    def sign_in: (untyped username, untyped password, ?untyped? otp) -> untyped
+    def initialize: (String base_uri) -> void
+    def sign_in: (String username, String password, ?String? otp) -> Hash[String, untyped]
     def update_scopes: () -> nil
 
     private
-    def get: (untyped endpoint, **untyped kwargs) -> untyped
-    def post: (untyped endpoint, **untyped kwargs) -> untyped
+    def get: (String endpoint, **untyped kwargs) -> untyped
+    def post: (String endpoint, **untyped kwargs) -> untyped
   end
 end
 
@@ -94,9 +89,6 @@ module Jim
 end
 
 module Net
-  class HTTPExceptions
-  end
-
   class HTTPResponse
     def okay?: () -> bool
     def or_raise!: () -> self
@@ -113,8 +105,8 @@ module Jim
 
     DEFAULT_REDIRECT_LIMIT: Integer
 
-    def self.get: (untyped url, ?parameters: ::Hash[untyped, untyped]?,
-                    ?headers: ::Hash[untyped, untyped]?, ?basic_auth: untyped) -> untyped
+    def self.get: (String url, ?parameters: ::Hash[String, String]?,
+                    ?headers: ::Hash[String, String]?, ?basic_auth: untyped) -> untyped
 
     def self.post: (untyped url, ?data: untyped?, ?form_data: untyped?, ?headers: ::Hash[untyped, untyped], ?basic_auth: untyped?) -> untyped
 
@@ -138,13 +130,13 @@ end
 
 module Jim
   module Platform
-    def self.host_os: () -> untyped
-    def self.windows?: () -> untyped
-    def self.linux?: () -> untyped
-    def self.macos?: () -> untyped
-    def self.bsd?: () -> untyped
-    def self.solaris?: () -> untyped
-    def self.unixy?: () -> untyped
+    def self.host_os: () -> String
+    def self.windows?: () -> bool
+    def self.linux?: () -> bool
+    def self.macos?: () -> bool
+    def self.bsd?: () -> bool
+    def self.solaris?: () -> bool
+    def self.unixy?: () -> bool
   end
 end
 
@@ -152,36 +144,17 @@ module Jim
   class Error < StandardError
   end
 
-  # Given a path to a gemspec, which contains arbitrary code of dubious provenance,
-  # run the code in a way that can returns the Jim::UnsafeSpec instance
-  # created by the Gem::Specification.new {...} call.
-  #
-  # That is to say, if you have jim.gemspec containing:
-  #     Gem::Specification.new do |spec|
-  #       spec.name = "foo"
-  #     end
-  #
-  # You get a Jim::UnsafeSpec returned, even though you have to use `load`,
-  # and `load` always returns a boolean.
-  #
-  # This is truly cursed. I hate everything about this.
-  # It's also the least-cursed option I could think of.
   def self.load_spec: (untyped gemspec) -> untyped
-
   def self.source_date_epoch: () -> untyped
-
-  def self.cli: () -> untyped
+  def self.cli: () -> void
 end
 
 module Jim
-  #
-  # An OptionParser wrapper providing a few convenience functions.
   class SimpleOpts < ::OptionParser
     @okay_options: untyped
 
     class SimpleOptsError < StandardError
     end
-
     class UnexpectedArgument < SimpleOptsError
     end
 
@@ -198,10 +171,8 @@ end
 
 module Jim
   module Tar
-    BLOCK_SIZE: 512
-
-    RECORD_SIZE: untyped
-
+    BLOCK_SIZE: Integer
+    RECORD_SIZE: Integer
     HEADER_INFO: Array[Array[untyped]]
 
     class UStarRecord < StringIO
@@ -243,11 +214,9 @@ module Jim
     def check: (untyped val) -> untyped
     def initialize: (Array[untyped] ary) -> void
     def []=: (untyped key, untyped val) -> untyped
-    #def push: (untyped val) -> untyped
-    #def unshift: (untyped val) -> untyped
   end
 
-  def self.TypedArray: (untyped value_class) -> untyped
+  def self.TypedArray: (Class value_class) -> Class
 end
 
 module Jim
@@ -255,12 +224,12 @@ module Jim
     class TypedHashError < TypeError
     end
 
-    attr_accessor self.key_class: untyped
-    attr_accessor self.value_class: untyped
+    attr_accessor self.key_class: Class
+    attr_accessor self.value_class: Class
     def self.from: (untyped val) -> untyped
   end
 
-  def self.TypedHash: (untyped key_class, untyped value_class) -> untyped
+  def self.TypedHash: (Class key_class, Class value_class) -> Class
 end
 
 module Jim
@@ -305,7 +274,6 @@ module Jim
     #string_accessor :version
     #array_of_strings_accessor :extra_rdoc_files
     #array_of_strings_accessor :rdoc_options
-
 
     def add_dependency: (untyped gem_name, *untyped requirements) -> untyped
     alias add_runtime_dependency add_dependency

@@ -1,0 +1,14 @@
+dependencies:
+  - name: date
+  - name: etc
+  - name: fileutils
+  - name: io-console
+  - name: json
+  - name: net-http
+  - name: optparse
+  - name: pathname
+  - name: pp
+  - name: prism
+  - name: stringio
+  - name: yaml
+  - name: zlib
