@@ -17,7 +17,7 @@ module Jim
           config_dir = ENV['LOCALAPPDATA']
 
           if config_dir.nil?
-            raise ConfigError "LOCALAPPDATA environment variable is not defined -- unsure how to continue"
+            raise ConfigError, "LOCALAPPDATA environment variable is not defined -- unsure how to continue"
           end
 
           File.join(config_dir, 'jim')
@@ -29,7 +29,10 @@ module Jim
             raise ConfigError, "neither XDG_CONFIG_DIR nor HOME environment variables are defined -- unsure how to continue"
           end
 
-          config_dir = ENV['XDG_CONFIG_DIR'] || File.join(ENV['HOME'], '.config')
+          # Preference, in order:
+          # $XDG_CONFIG_DIR/.config/jim
+          # $HOME/.config/jim
+          config_dir = ENV['XDG_CONFIG_DIR'] || File.join(ENV.fetch('HOME'), '.config')
           File.join(config_dir, 'jim')
         end
       end.freeze
