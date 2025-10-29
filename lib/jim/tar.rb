@@ -103,7 +103,6 @@ module Jim
       def initialize(&block)
         @io = StringIO.new
         instance_exec(self, &block) if block
-        self
       end
 
       def close_write
