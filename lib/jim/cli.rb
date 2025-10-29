@@ -192,7 +192,7 @@ module Jim
 
       puts "FIXME: Actually publish #{gem_file} to #{gem_host}" if gem_host
 
-      if options[:github]
+      if github_repo
         puts "Publishing GitHub release."
         gh_release.publish!
       end
