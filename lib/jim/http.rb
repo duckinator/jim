@@ -100,6 +100,8 @@ module Jim
 
       # Convert the URL (a String) into a URI object.
       uri = URI.parse(url)
+      host = uri.host
+      raise RuntimeError, "URI has no host: #{url}" unless host
 
       # Set the query string for the request.
       unless parameters.nil? || parameters.empty?
@@ -113,7 +115,8 @@ module Jim
 
       # Net::HTTP.start() keeps a connection to the host alive
       # for all requests that occur inside the block.
-      Net::HTTP.start(uri.host, uri.port, options) do |http|
+      Net::HTTP.start(host, uri.port, options) do |http| # steep:ignore
+
         # Get a reference to the class for the specified request type.
         # E.g., if it's a post request, this returns Net::HTTP::Post.
         request_class = Net::HTTP.const_get(http_method)
