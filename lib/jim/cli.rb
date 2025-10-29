@@ -35,9 +35,12 @@ module Jim
       end
 
       contents = Packer.pack(spec)
+      filename = File.join("build", "pack", "#{spec.name}.rb")
 
       FileUtils.mkdir_p("build/pack")
-      File.write("build/pack/#{spec.name}.rb", contents)
+      File.write(filename, contents)
+
+      puts filename
     end
 
 #    def self.config(command, setting, value=nil)
