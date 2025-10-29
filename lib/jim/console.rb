@@ -6,9 +6,9 @@ module Jim
       print "#{msg}: "
 
       if noecho
-        STDIN.noecho(&:gets).chomp
+        STDIN.noecho(&:gets)&.chomp
       else
-        STDIN.gets.chomp
+        STDIN.gets&.chomp
       end
     end
   end
