@@ -51,7 +51,7 @@ module Jim
     # The default value for SOURCE_DATE_EPOCH if not specified.
     # We want a date after 1980-01-01, to prevent issues with Zip files.
     # This particular timestamp is for 1980-01-02 00:00:00 GMT.
-    Time.at(ENV['SOURCE_DATE_EPOCH'] || 315_619_200).utc.freeze
+    Time.at(ENV['SOURCE_DATE_EPOCH']&.to_i || 315_619_200).utc.freeze
   end
 
   def self.cli
