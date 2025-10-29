@@ -15,7 +15,7 @@ module Jim
 
       needs_mfa = !otp.nil? && !otp.empty?
 
-      headers["OTP"] = otp if needs_mfa
+      headers["OTP"] = otp if needs_mfa # steep:ignore ArgumentTypeMismatch
 
       #possible_scopes = [:index_rubygems, :push_rubygem, :yank_rubygem, :add_owner, :remove_owner, :access_webhooks]
       scopes = {
