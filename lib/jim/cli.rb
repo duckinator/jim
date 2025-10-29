@@ -22,13 +22,13 @@ module Jim
       end
     end
 
-    def self.config(command, setting, value=nil)
-      config = Jim::Config.load_or_create
-
-      Jim::Config.set(setting, value) unless value.nil?
-
-      Jim::Config.get(setting)
-    end
+#    def self.config(command, setting, value=nil)
+#      config = Jim::Config.load_or_create
+#
+#      Jim::Config.set(setting, value) unless value.nil?
+#
+#      Jim::Config.get(setting)
+#    end
 
     # Sign in to the specified gem server.
     def self.signin(*args)
@@ -143,7 +143,13 @@ module Jim
     end
 
     def self.help_text(prefix, method_name, summary: false)
-      file, line = method(method_name).source_location
+      method_obj = method(method_name)
+      if method_obj.nil?
+        raise RuntimeError, "couldn't find method Jim::Cli.#{method_name} -- this is a bug, please report it!"
+      end
+
+      file, line = method_obj.source_location
+
       comment_line = line - 1
 
       comment = Prism.parse_file_comments(file).filter { |c|
