@@ -80,6 +80,15 @@ module Jim
       send_request(:Post, url, nil, body, headers, basic_auth)
     end
 
+    # Make an HTTP PATCH request.
+    #
+    # @param url [String] The URL to request.
+    # @param data [String] Raw data to for the body of the request.
+    def self.patch(url, data: nil, headers: {}, basic_auth: nil)
+      send_request(:Patch, url, nil, data, headers, basic_auth)
+    end
+
+
     # rubocop:disable Metrics/AbcSize
 
     # Helper method for actually creating a request.
