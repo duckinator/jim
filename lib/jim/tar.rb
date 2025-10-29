@@ -56,7 +56,7 @@ module Jim
       end
 
       def self.load(file)
-        raise UnimplementedError
+        raise NotImplementedError
       end
 
       def self.from(contents, **opts)
