@@ -9,7 +9,7 @@ module Jim
     end
 
     def sign_in(username, password, otp=nil)
-      headers = {}
+      headers = {} #: Hash[String, String]
 
       otp&.strip!
 
