@@ -47,7 +47,7 @@ module Jim
   ##
   # A wrapper around Net::HTTP, focused on ease of use and flexibility.
   module HTTP
-    RedirectLimitError = Class.new(StandardError)
+    class RedirectLimitError < StandardError; end
 
     DEFAULT_REDIRECT_LIMIT = 10
 
@@ -93,6 +93,7 @@ module Jim
     def self.send_request(http_method, url, parameters, body, headers,
                           basic_auth = nil,
                           redirect_limit = DEFAULT_REDIRECT_LIMIT)
+      redirect_limit ||= DEFAULT_REDIRECT_LIMIT # FIXME: This shouldn't be needed.
       if redirect_limit <= 0
         raise RedirectLimitError, "request exceeded redirect limit"
       end
@@ -123,7 +124,7 @@ module Jim
         # If provided, use Basic Auth.
         request.basic_auth(*basic_auth) unless basic_auth.nil?
 
-        headers.each do |k, v|
+        headers&.each do |k, v|
           request[k] = v
         end
 
@@ -148,7 +149,7 @@ module Jim
             new_uri.path += "/" + response["location"]
             new_url = new_uri.to_s
           end
-          send_request(:Get, new_url, parameters, body, headers,
+          send_request(:Get, new_url, parameters, body, headers, basic_auth,
                        redirect_limit - 1)
         else
           response
