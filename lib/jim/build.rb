@@ -28,7 +28,11 @@ module Jim
 
       filename = "#{spec.name}-#{spec.version}.gem"
 
-      Dir.mkdir(BUILD_DIR)
+      # Create the build directory if needed.
+      Dir.mkdir(BUILD_DIR) unless Dir.exist?(BUILD_DIR)
+
+      # Remove the output files, if they already exist.
+      FileUtils.rm_f([CHECKSUMS_PATH, DATA_PATH, METADATA_PATH])
 
       Jim::Tar::UStarBuilder.new { |d|
         spec.files.each { |f|
