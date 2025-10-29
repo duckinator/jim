@@ -41,7 +41,9 @@ module Jim
         raise TypedHashError, "expected key to be #{self.class.key_class}, got #{key.class}: #{key.inspect}"
       end
 
-      val = self.class.value_class.from(val) if val.is_a?(Array) && self.class.value_class.respond_to?(:from)
+      if val.is_a?(Array) && self.class.value_class.respond_to?(:from)
+        val = self.class.value_class.from(val) # steep:ignore NoMethod
+      end
 
       unless val.is_a?(self.class.value_class)
         raise TypedHashError, "expected val to be #{self.class.value_class}, got #{val.class}: #{val.inspect}"
