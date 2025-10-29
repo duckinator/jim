@@ -144,11 +144,9 @@ module Jim
 
     def self.help_text(prefix, method_name, summary: false)
       method_obj = method(method_name)
-      if method_obj.nil?
-        raise RuntimeError, "couldn't find method Jim::Cli.#{method_name} -- this is a bug, please report it!"
-      end
 
       file, line = method_obj.source_location
+      raise RuntimeError, "method(#{method_name}).source_location should never be nil" if file.nil? || line.nil?
 
       comment_line = line - 1
 
