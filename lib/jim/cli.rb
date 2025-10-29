@@ -1,4 +1,5 @@
 require "fileutils"
+require "pathname"
 require_relative "build"
 require_relative "client"
 require_relative "config"
@@ -10,7 +11,7 @@ module Jim
   module Cli
     extend Jim::Console
 
-    METHODS = %w[signin signout build clean gemspec help pack]
+    METHODS = %w[signin signout build clean pack release help]
 
     def self.run
       ARGV[0] = "help" if %w[--help -h].include?(ARGV[0])
@@ -24,11 +25,20 @@ module Jim
     end
 
     # Pack a gem into a single file.
-    def self.pack
-      spec_file, *rest = Dir.glob("*.gemspec")
-      abort "Found multiple gemspecs: #{spec_file}, #{rest.join(',')}" unless rest.empty?
+    def self.pack(*args)
+      opts = SimpleOpts.new(
+        banner: "Usage: jim pack [--quiet]",
+      )
 
-      spec = Jim.load_spec(spec_file)
+      opts.simple("--quiet",
+                  "Don't print anything on success",
+                  :quiet)
+
+      options, args = opts.parse_with_args(args)
+
+      return puts opts if options[:help] || !args.empty?
+
+      spec = load_spec_or_abort!
 
       unless spec.executables.length == 1
         abort "error: expected only one executable specified in #{spec_file}, found:\n- #{spec.executables.join("\n- ")}"
@@ -40,7 +50,9 @@ module Jim
       FileUtils.mkdir_p("build/pack")
       File.write(filename, contents)
 
-      puts filename
+      puts filename unless options[:quiet]
+
+      filename
     end
 
 #    def self.config(command, setting, value=nil)
@@ -104,9 +116,13 @@ module Jim
     # Builds a Gem from the provided gemspec.
     def self.build(*args)
       opts = SimpleOpts.new(
-        banner: "Usage: jim build [-C PATH] GEMSPEC",
+        banner: "Usage: jim build [--quiet] [-C PATH] GEMSPEC",
         defaults: { path: "." },
       )
+
+      opts.simple("--quiet",
+                  "Don't print anything on success",
+                  :quiet)
 
       opts.simple("-C PATH",
                   "Change the current working directory to PATH before building",
@@ -120,27 +136,85 @@ module Jim
 
       return puts opts if options[:help] || args.length > 1
 
-      spec = args.shift
-      if spec.nil?
-        spec, *rest = Dir.glob("*.gemspec")
-        abort "Found multiple gemspecs: #{spec}, #{rest.join(',')}" unless rest.empty?
-      end
-
-      spec = Jim.load_spec(spec)
+      spec = load_spec_or_abort!(args.shift)
 
       out_file = Dir.chdir(options[:path]) { Jim::Build.build(spec) }
 
-      puts "Name:    #{spec.name}"
-      puts "Version: #{spec.version}"
-      puts
-      puts "Output:  #{out_file}"
+      unless options[:quiet]
+        puts "Name:    #{spec.name}"
+        puts "Version: #{spec.version}"
+        puts
+        puts "Output:  #{out_file}"
+      end
 
       out_file
     end
 
-    # Clean up build artifacts
+    # Clean up build/pack artifacts.
     def self.clean
       FileUtils.rm_r(Jim::Build::BUILD_DIR) if File.exist?(Jim::Build::BUILD_DIR)
+    end
+
+    # Build and release a gem.
+    def self.release(*args)
+      opts = SimpleOpts.new(
+        banner: "Usage: jim release [--pack] [--github] [--host HOST]",
+      )
+
+      opts.simple("--pack",
+                  "When releasing to GitHub, include the packed version.",
+                  :pack)
+
+      opts.simple("--github",
+                  "Release to Github.",
+                  :github)
+
+      opts.simple("--host HOST",
+                  "Gem host to push to.",
+                  :host)
+
+      opts.simple("-h", "--help",
+                  "Show this help message and exit",
+                  :help)
+
+      options, args = opts.parse_with_args(args)
+
+      return puts opts if options[:help] || !args.empty?
+
+      spec = load_spec_or_abort!
+
+      packed_file = self.pack("--quiet") if options[:pack]
+      gem_file = self.build("--quiet")
+
+      gh_release =
+        if options[:github]
+          token = ENV["JIM_GITHUB_TOKEN"]
+          abort "error: Expected JIM_GITHUB_TOKEN to be defined" if token.nil? || token.emtpy?
+          github_repo = spec.metadata["github_repo"]
+          abort "error: Expected spec.metadata[\"github_repo\"] to be defined in gemspec" if github_repo.nil?
+
+          owner, repo = github_repo.split("/")
+          if repo.nil?
+            abort "error: Expected spec.metadata[\"github_repo\"] to be of the format \"owner/repo\", got #{github_repo.inspect}"
+          end
+
+          assets = []
+
+          assets << packed_file if packed_file
+          assets << gem_file
+
+          assets = assets.map { |f| [f, Pathname(f).basename] }.to_h
+
+          gh = Jim::GithubApi.new(owner, repo, spec.name, token.strip)
+          gh.create_release(spec.version, assets: assets)
+        end
+
+      puts "FIXME: Actually publish #{gem_file}"
+
+      if options[:github]
+        puts "Publishing GitHub release."
+        gh_release.publish!
+      end
     end
 
     # Print information about the gemspec in the current directory.
@@ -198,6 +272,15 @@ module Jim
       width = comments.keys.sort_by(&:length).last.length + 4
 
       comments.map {|name, comment| "#{name.ljust(width)} #{comment}" }
+    end
+
+    def self.load_spec_or_abort!(spec=nil)
+      if spec.nil?
+        spec, *rest = Dir.glob("*.gemspec")
+        abort "Found multiple gemspecs: #{spec}, #{rest.join(',')}" unless rest.empty?
+      end
+
+      Jim.load_spec(spec)
     end
   end
 end
