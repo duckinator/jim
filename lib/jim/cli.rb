@@ -4,6 +4,7 @@ require_relative "build"
 require_relative "client"
 require_relative "config"
 require_relative "console"
+require_relative "github_api"
 require_relative "packer"
 require_relative "simple_opts"
 
