@@ -14,11 +14,12 @@ module Jim
 
     METHODS = %w[signin signout build clean pack release help]
 
-    def self.run
-      ARGV[0] = "help" if %w[--help -h].include?(ARGV[0])
+    def self.run(args=nil)
+      args ||= ARGV
+      args[0] = "help" if %w[--help -h].include?(args[0])
 
-      if METHODS.include?(ARGV[0])
-        send(*ARGV)
+      if METHODS.include?(args[0])
+        send(*args)
       else
         help
         exit 1
