@@ -92,7 +92,7 @@ module Jim
 
       # Don't fetch changelog info unless needed.
       if body.include?('{changelog}')
-        format_dict['changelog'] = changelog
+        format_hash['changelog'] = changelog
       end
 
       request = {
