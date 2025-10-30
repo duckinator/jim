@@ -160,11 +160,17 @@ module Jim
     def self.release
       spec = load_spec_or_abort!
 
-      packed_file = self.pack("--quiet")
-      gem_file = self.build("--quiet")
-
       github_repo = spec.metadata["jim/github_repo"]
       gem_host = spec.metadata["jim/gem_host"]
+
+      packed_file =
+        if spec.executables.length == 1
+          puts "Packing gem..."
+          self.pack("--quiet")
+        end
+
+      puts "Building gem..."
+      gem_file = self.build("--quiet")
 
       unless github_repo
         warn 'No GitHub repo specified. Set spec.metadata["jim/github_repo"] in your gemspec to release to GitHub.'
@@ -184,10 +190,16 @@ module Jim
             abort "error: Expected spec.metadata[\"github_repo\"] to be of the format \"owner/repo\", got #{github_repo.inspect}"
           end
 
-          assets = [packed_file, gem_file].map { |f| [f, Pathname(f).basename] }.to_h
+          note = "If you want a self-contained executable, use the packed #{packed_file} file." if packed_file
+
+          files = []
+          files << packed_file if packed_file
+          files << gem_file
+
+          assets = files.map { |f| [f, Pathname(f).basename] }.to_h
 
           gh = Jim::GithubApi.new(owner, repo, spec.name, token.strip)
-          gh.create_release(spec.version, assets: assets)
+          gh.create_release(spec.version, assets: assets, note: note)
         end
 
       puts "FIXME: Actually publish #{gem_file} to #{gem_host}" if gem_host
