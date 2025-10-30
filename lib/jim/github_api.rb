@@ -66,7 +66,7 @@ module Jim
       commitish ||= run("git", "rev-parse", "HEAD")
       body ||= <<~EOF
         %{repo} %{tag} is now available!
-        %{default_note}
+        %{note}
         ---
 
         Changes:
