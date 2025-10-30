@@ -61,10 +61,18 @@ module Jim
     # `prerelease` indicates whether it should be a prerelease or not.
     # `assets` is a Hash mapping local file paths to the uploaded asset name.
     def create_release(tag_name, name: nil, commitish: nil, body: nil, draft: true,
-                       prerelease: nil, assets: nil)
+                       prerelease: nil, assets: nil, note: nil)
       name ||= "%{project_name} %{tag}"
       commitish ||= run("git", "rev-parse", "HEAD")
-      body ||= "%{repo} %{tag}"
+      body ||= <<~EOF
+        %{repo} %{tag} is now available!
+        %{default_note}
+        ---
+
+        Changes:
+
+        %{changelog}
+      EOF
       name ||= "%{project_name} %{tag}"
 
       draft_indicator = draft ? ' as a draft' : ''
@@ -79,6 +87,7 @@ module Jim
         repo: repo,
         tag: tag_name,
         tag_name: tag_name,
+        note: note ? "\n#{note}\n" : "",
       }
 
       # Don't fetch changelog info unless needed.
@@ -94,7 +103,6 @@ module Jim
         "draft" => draft,
         "prerelease" => prerelease,
       }
-      p request
       url = "/repos/#{owner}/#{repo}/releases"
       response = api_post(url, request)
 
@@ -135,7 +143,7 @@ module Jim
     end
 
     def add_release_asset(upload_url, local_file, name)
-      puts "Adding asset #{name} to release (original file: #{local_file})"
+      puts "  Adding asset #{name} to release (original file: #{local_file})"
 
       data = File.open(local_file, 'rb') { |f| f.read }
 
