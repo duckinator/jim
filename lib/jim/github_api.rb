@@ -129,7 +129,7 @@ module Jim
     end
 
     def format_for_changelog(pr)
-      "* #{pr['title']} (#{pr['number']}) by @#{pr['user']['login']}"
+      "* #{pr['title']} (##{pr['number']}) by @#{pr['user']['login']}"
     end
 
     def relevant_to_changelog(pr)
