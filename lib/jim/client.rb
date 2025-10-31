@@ -15,7 +15,7 @@ module Jim
     def sign_in(username, password, otp=nil)
       headers = {} #: Hash[String, String]
 
-      otp&.strip!
+      otp = otp&.strip
 
       needs_mfa = !otp.nil? && !otp.empty?
 
