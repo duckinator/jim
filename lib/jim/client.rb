@@ -1,9 +1,12 @@
+require_relative "console"
 require_relative "http"
 require "date"
 require "etc"
 
 module Jim
   class Client
+    include Jim::Console
+
     def initialize(base_uri)
       @base_uri = base_uri
     end
@@ -26,15 +29,7 @@ module Jim
 
       puts "Please choose which scopes you want your API key to have:"
       scopes.each do |k, v|
-        begin
-          if scopes[k]
-            print "#{k}? [Y/n] "
-          else
-            print "#{k}? [y/N] "
-          end
-          result = STDIN.gets&.strip&.downcase
-        end until result && ['y', 'n', ''].include?(result)
-        scopes[k] = (result == 'y') || (result.empty? && scopes[k])
+        scopes[k] = prompt_yesno(k, default_to_yes: scopes[k])
       end
 
       name = "jim--#{Etc.uname[:nodename]}-#{Etc.getlogin}-#{DateTime.now.strftime('%Y-%m-%dT%H%M%S')}"
