@@ -62,8 +62,8 @@ module Jim
     end
 
     def self.load_api_key
-      raise ConfigError, "please sign in first"
-      File.read(self.key_file)
+      raise ConfigError, "please sign in first" unless self.has_api_key
+      JSON.load_file(self.key_file)
     end
 
     def self.delete_api_key
