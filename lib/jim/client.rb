@@ -39,17 +39,21 @@ module Jim
         **scopes,
       }
 
-      key = post(
-        "/api/v1/api_key",
-        headers: headers,
-        form_data: form_data,
-        basic_auth: [username, password]
-      ).or_raise!.read_body.strip
+      key = create_api_key(headers, form_data, username, password)
 
       Config.save_api_key(name, @base_uri, key, scopes, needs_mfa)
     end
 
     def update_scopes
+    end
+
+    private def create_api_key(headers, form_data, username, password)
+      post(
+        "/api/v1/api_key",
+        headers: headers,
+        form_data: form_data,
+        basic_auth: [username, password]
+      ).or_raise!.read_body.strip
     end
 
     private def get(endpoint, **kwargs)
