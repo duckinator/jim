@@ -1,3 +1,4 @@
+require_relative "config"
 require_relative "console"
 require_relative "http"
 require "date"
