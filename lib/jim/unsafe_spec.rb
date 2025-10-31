@@ -8,7 +8,15 @@ module Jim
     HashOfStringToString = Jim::TypedHash(String, String)
     HashOfStringToAOS = Jim::TypedHash(String, ArrayOfStrings)
 
-    @@accessors = [:metadata, :specification_version]
+    attr_accessor :runtime_dependencies
+    attr_accessor :development_dependencies
+
+    @@accessors = [
+      :metadata,
+      :specification_version,
+      :runtime_dependencies,
+      :development_dependencies,
+    ]
 
     # steep:ignore:start
     # The aggressive amount of metaprogramming here confuses Steep

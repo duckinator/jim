@@ -9,36 +9,40 @@ module Jim
     CONFIG_FILE_NAME = "jim.json"
     KEY_FILE_NAME = "api-key.json"
 
-    CONFIG_DIR =
-      begin
-        if Platform.windows?
-          warn "I haven't tested this on Windows, sorry if there's problems <3"
+    def self.config_dir
+      if Platform.windows?
+        warn "I haven't tested this on Windows, sorry if there's problems <3"
 
-          config_dir = ENV['LOCALAPPDATA']
+        config_dir = ENV['LOCALAPPDATA']
 
-          if config_dir.nil?
-            raise ConfigError, "LOCALAPPDATA environment variable is not defined -- unsure how to continue"
-          end
-
-          File.join(config_dir, 'jim')
-        else
-          user_home = ENV['HOME']
-          xdg_config_dir = ENV['XDG_CONFIG_DIR']
-
-          if xdg_config_dir.nil? && user_home.nil?
-            raise ConfigError, "neither XDG_CONFIG_DIR nor HOME environment variables are defined -- unsure how to continue"
-          end
-
-          # Preference, in order:
-          # $XDG_CONFIG_DIR/.config/jim
-          # $HOME/.config/jim
-          config_dir = ENV['XDG_CONFIG_DIR'] || File.join(ENV.fetch('HOME'), '.config')
-          File.join(config_dir, 'jim')
+        if config_dir.nil?
+          raise ConfigError, "LOCALAPPDATA environment variable is not defined -- unsure how to continue"
         end
-      end.freeze
 
-    CONFIG_FILE = File.join(CONFIG_DIR, CONFIG_FILE_NAME).freeze
-    KEY_FILE = File.join(CONFIG_DIR, KEY_FILE_NAME).freeze
+        File.join(config_dir, 'jim')
+      else
+        user_home = ENV['HOME']
+        xdg_config_dir = ENV['XDG_CONFIG_DIR']
+
+        if xdg_config_dir.nil? && user_home.nil?
+          raise ConfigError, "neither XDG_CONFIG_DIR nor HOME environment variables are defined -- unsure how to continue"
+        end
+
+        # Preference, in order:
+        # $XDG_CONFIG_DIR/.config/jim
+        # $HOME/.config/jim
+        config_dir = ENV['XDG_CONFIG_DIR'] || File.join(ENV.fetch('HOME'), '.config')
+        File.join(config_dir, 'jim')
+      end
+    end
+
+    def self.config_file
+      File.join(self.config_dir, CONFIG_FILE_NAME).freeze
+    end
+
+    def self.key_file
+      File.join(self.config_dir, KEY_FILE_NAME).freeze
+    end
 
     def self.save_api_key(name, server, key, scopes, needs_mfa)
       data = {
@@ -48,8 +52,8 @@ module Jim
         "scopes" => scopes,
         "needs_mfa" => needs_mfa,
       }
-      FileUtils.mkdir_p(CONFIG_DIR)
-      File.write(KEY_FILE, JSON.dump(data))
+      FileUtils.mkdir_p(self.config_dir)
+      File.write(self.key_file, JSON.dump(data))
       data
     end
 
@@ -58,17 +62,17 @@ module Jim
     end
 
     def self.load_api_key
-      raise ConfigError, "please sign in first"
-      File.read(KEY_FILE)
+      raise ConfigError, "please sign in first" unless self.has_api_key
+      JSON.load_file(self.key_file)
     end
 
     def self.delete_api_key
-      File.delete(KEY_FILE) if File.exist?(KEY_FILE)
-      raise "failed to remove #{KEY_FILE}?" if File.exist?(KEY_FILE)
+      File.delete(self.key_file) if File.exist?(self.key_file)
+      raise "failed to remove #{self.key_file}?" if File.exist?(self.key_file)
     end
 
     def self.has_api_key
-      File.exist?(KEY_FILE)
+      File.exist?(self.key_file)
     end
 
     def self.try_load_api_key
