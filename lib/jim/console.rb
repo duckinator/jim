@@ -1,18 +1,23 @@
 module Jim
   module Console
+    attr_accessor :always_default
+    @always_default = false
+
     def prompt(msg, default=nil, noecho: false)
-      return default unless default.nil?
+      return default if always_default
 
       print "#{msg}: "
 
       if noecho
-        STDIN.noecho(&:gets)&.chomp
+        STDIN.noecho(&:gets)&.chomp || default
       else
-        STDIN.gets&.chomp
+        STDIN.gets&.chomp || default
       end
     end
 
     def prompt_yesno(msg, default_to_yes: false)
+      return default_to_yes if always_default
+
       yesno = (default_to_yes ? "Y/n" : "y/N")
 
       begin
