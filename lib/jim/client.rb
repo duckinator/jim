@@ -44,9 +44,6 @@ module Jim
       Config.save_api_key(name, @base_uri, key, scopes, needs_mfa)
     end
 
-    def update_scopes
-    end
-
     private def create_api_key(headers, form_data, username, password)
       post(
         "/api/v1/api_key",
