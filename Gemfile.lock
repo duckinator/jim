@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    jim (1.0.0b2)
+    jim (1.0.0b3)
 
 GEM
   remote: https://rubygems.org/

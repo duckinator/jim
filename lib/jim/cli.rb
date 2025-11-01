@@ -196,7 +196,7 @@ module Jim
             abort "error: Expected spec.metadata[\"github_repo\"] to be of the format \"https://github.com/owner/repo\", got #{github_repo.inspect}"
           end
 
-          note = "If you want a self-contained executable, use the packed #{packed_file} file." if packed_file
+          note = "If you want a self-contained executable, use the packed #{File.basename(packed_file)} file." if packed_file
 
           files = []
           files << packed_file if packed_file
