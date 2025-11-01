@@ -36,7 +36,7 @@ More advanced features:
 Eventually, there will also be:
 - `jim push`: push the specified gem to the configured host.
 
-### Example Usage
+### Basic Usage
 
 ```console
 puppy@cerberus:~/okay$ jim signin
@@ -92,6 +92,23 @@ Commands
   jim help
   jim pack
 ~$
+```
+
+### Creating A Release
+
+Jim can not currently publish to gem hosts.
+<!--
+If you want to publish to a gem host, you first need to add the following to your gemspec:
+
+```ruby
+  spec.metadata["allowed_push_host"] = "https://gem-host.example/"
+```
+-->
+
+If you want to publish to GitHub Releases, you first need to add the following to your gemspec:
+
+```ruby
+  spec.metadata["github_repo"] = "https://github.com/EXAMPLE_USER/EXAMPLE_REPO"
 ```
 
 ## Development

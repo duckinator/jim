@@ -17,9 +17,7 @@ Gem::Specification.new do |spec|
   spec.metadata["allowed_push_host"] = "https://rubygems.pkg.github.com/duckinator"
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/duckinator/jim"
-
-  spec.metadata["jim/github_repo"] = "duckinator/jim"
-  spec.metadata["jim/gem_host"] = spec.metadata["allowed_push_host"]
+  spec.metadata["github_repo"] = spec.metadata["source_code_uri"]
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.

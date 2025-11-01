@@ -161,8 +161,11 @@ module Jim
     def self.release
       spec = load_spec_or_abort!
 
-      github_repo = spec.metadata["jim/github_repo"]
-      gem_host = spec.metadata["jim/gem_host"]
+      # Re-use the configuration that GitHub Packages wants.
+      github_repo = spec.metadata["github_repo"]
+
+      # Re-use the configuration that RubyGems uses to block pushing to the wrong host.
+      gem_host = spec.metadata["allowed_push_host"]
 
       packed_file =
         if spec.executables.length == 1
@@ -174,21 +177,23 @@ module Jim
       gem_file = self.build("--quiet")
 
       unless github_repo
-        warn 'No GitHub repo specified. Set spec.metadata["jim/github_repo"] in your gemspec to release to GitHub.'
+        warn 'No GitHub repo specified. Set spec.metadata["github_repo"] in your gemspec to release to GitHub.'
       end
 
       unless gem_host
-        warn 'No gem host specified. Set spec.metadata["jim/gem_host"] in your gemspec to release to a gem host.'
+        warn 'No gem host specified. Set spec.metadata["allowed_push_host"] in your gemspec to release to a gem host.'
       end
 
       gh_release =
         if github_repo
           token = ENV["JIM_GITHUB_TOKEN"]
-          abort "error: Expected JIM_GITHUB_TOKEN to be defined" if token.nil? || token.empty?
+          abort "error: Expected JIM_GITHUB_TOKEN to be defined"  if token.nil? || token.empty?
 
-          owner, repo = github_repo.split("/")
-          if repo.nil?
-            abort "error: Expected spec.metadata[\"github_repo\"] to be of the format \"owner/repo\", got #{github_repo.inspect}"
+          gh_repo_uri = URI(github_repo)
+          owner_and_repo = gh_repo_uri.path.sub(%r[^/], '')
+          owner, repo = owner_and_repo&.split("/")
+          if gh_repo_uri.host != "github.com" || repo.nil?
+            abort "error: Expected spec.metadata[\"github_repo\"] to be of the format \"https://github.com/owner/repo\", got #{github_repo.inspect}"
           end
 
           note = "If you want a self-contained executable, use the packed #{packed_file} file." if packed_file
@@ -199,6 +204,7 @@ module Jim
 
           assets = files.map { |f| [f, Pathname(f).basename] }.to_h
 
+          puts "Preparing GitHub Release."
           gh = Jim::GithubApi.new(owner, repo, spec.name, token.strip)
           gh.create_release(spec.version, assets: assets, note: note)
         end
@@ -206,7 +212,7 @@ module Jim
       puts "FIXME: Actually publish #{gem_file} to #{gem_host}" if gem_host
 
       if github_repo
-        puts "Publishing GitHub release."
+        puts "Publishing GitHub Release."
         gh_release.publish!
       end
     end
