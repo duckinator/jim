@@ -111,11 +111,13 @@ If you want to publish to GitHub Releases, you first need to add the following t
   spec.metadata["github_repo"] = "https://github.com/EXAMPLE_USER/EXAMPLE_REPO"
 ```
 
+If you have `JIM_GITHUB_TOKEN` set to a GitHub Access Token, `jim release` will publish to GitHub Releases.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, (TODO).
+To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, run `jim release`.
 
 ## Contributing
 
