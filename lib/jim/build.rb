@@ -35,7 +35,7 @@ module Jim
       FileUtils.rm_f([CHECKSUMS_PATH, DATA_PATH, METADATA_PATH])
 
       Jim::Tar::UStarBuilder.new { |d|
-        spec.files.each { |f|
+        spec.files.uniq.each { |f|
           d.add_file_path(f)
         }
       }.build.save(DATA_PATH)

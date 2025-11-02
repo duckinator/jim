@@ -110,6 +110,13 @@ module Jim
       end
 
       def add_file_path(path, **opts)
+        if File.directory?(path)
+          Dir[File.join(path, '**', '*.rb')].map { |p|
+            add_file_path(p, **opts)
+          }
+          return
+        end
+
         File.open(path, 'rb') { |f|
           add_file(f.read, name: path, **opts)
         }

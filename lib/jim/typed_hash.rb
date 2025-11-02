@@ -51,6 +51,19 @@ module Jim
 
       super(key, val)
     end
+
+    def to_h
+      super.map { |k, v|
+        case v
+        when Array
+          [k, v.to_a]
+        when Hash
+          [k, v.to_h]
+        else
+          [k, v]
+        end
+      }.to_h
+    end
   end
 
   def self.TypedHash(key_class, value_class)
