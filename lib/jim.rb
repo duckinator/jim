@@ -39,6 +39,15 @@ module Jim
         gem_mod.const_set(:Specification, spec_cls)
 
         gem_mod.define_singleton_method(:win_platform?, &Jim::Platform.method(:windows?))
+
+        # Add `Gem::Platform::RUBY`, and raise an exception for all other platforms.
+        gem_mod.const_set(:Platform, Class.new { |c|
+          c.const_set(:UnsupportedPlatformError, Class.new(StandardError))
+          c.const_set(:RUBY, "ruby")
+          c.define_method(:const_missing) { |name|
+            c.const_get(:UnsupportedPlatformError).new("Unsupported platform: #{name}")
+          }
+        })
       })
       # Summon an eldritch being, hoping that `wrap=self` contains some of
       # the impending disaster.

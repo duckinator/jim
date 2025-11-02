@@ -76,15 +76,20 @@ module Jim
     array_accessor :executables
     array_accessor :require_paths
     string_accessor :required_ruby_version
+    string_accessor :required_rubygems_version
     string_accessor :version
     array_of_strings_accessor :extra_rdoc_files
     array_of_strings_accessor :rdoc_options
+    string_accessor :platform
+    string_accessor :require_path
 
     def initialize(&block)
       @specification_version = 4
       @metadata = HashOfStringToString.new
       @runtime_dependencies = HashOfStringToAOS.new
       @dev_dependencies = HashOfStringToAOS.new
+      @extra_rdoc_files = ArrayOfStrings.new
+      @rdoc_options = ArrayOfStrings.new
 
       yield self
       self.class.class_variable_get(:@@extract_spec_fn).call(self)
@@ -119,6 +124,7 @@ module Jim
       @@accessors.map { |k, v|
         value = instance_variable_get(:"@#{k}")
         value = value.to_h if value.is_a?(Hash)
+        value = value.to_a if value.is_a?(Array)
 
         if [:required_ruby_version, :required_rubygems_version].include?(k) && value.is_a?(String)
           operator, version = value.strip.split(' ', 2).map(&:strip)
