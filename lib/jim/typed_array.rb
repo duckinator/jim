@@ -34,9 +34,9 @@ module Jim
       val
     end
 
-    def initialize(ary)
+    def initialize(ary=nil)
       super()
-      ary.each { |v| self.push(v) }
+      ary.each { |v| self.push(v) } unless ary.nil?
     end
     def []=(key, val);  super(key, check(val)); end
 
