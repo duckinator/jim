@@ -47,6 +47,19 @@ module Jim
     def unshift(*vals)
       super(*vals.map {|v| check(v) })
     end
+
+    def to_a
+      super.map { |x|
+        case x
+        when Array
+          x.to_a
+        when Hash
+          x.to_h
+        else
+          x
+        end
+      }
+    end
   end
 
   def self.TypedArray(value_class)
