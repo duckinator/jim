@@ -1,7 +1,7 @@
 require "pathname"
 require "stringio"
 
-module Jim
+module Jwl
   module Tar
     BLOCK_SIZE = 512
     RECORD_SIZE = BLOCK_SIZE * 20
@@ -45,7 +45,7 @@ module Jim
           gname: "group",
           version: " ",
           checksum: "".ljust(8),
-          mtime: Jim.source_date_epoch,
+          mtime: Jwl.source_date_epoch,
           typeflag: "0",
           linkname: "",
           devmajor: "\x00",
@@ -153,7 +153,7 @@ module Jim
 
         if File.extname(file) == ".gz"
           Zlib::GzipWriter.open(file) { |gz|
-            gz.mtime = Jim.source_date_epoch.to_i
+            gz.mtime = Jwl.source_date_epoch.to_i
             IO.copy_stream(@io, gz)
           }
         else

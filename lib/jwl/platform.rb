@@ -1,4 +1,4 @@
-module Jim
+module Jwl
   module Platform
     def self.host_os
       RbConfig::CONFIG["host_os"]

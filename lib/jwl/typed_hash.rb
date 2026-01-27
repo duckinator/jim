@@ -1,4 +1,4 @@
-module Jim
+module Jwl
   ##
   # A Hash that raises exceptions unless keys and values are of the
   # specified types.
@@ -10,7 +10,7 @@ module Jim
   # h["a"] = "foo"
   # #=> "foo"
   # h["b"] = 1
-  # #=> Jim::TypedHashError: expected val to be String, got Integer: 1
+  # #=> Jwl::TypedHashError: expected val to be String, got Integer: 1
   # ```
   class TypedHash < Hash
     class TypedHashError < TypeError; end

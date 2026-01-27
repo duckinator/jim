@@ -1,12 +1,12 @@
 require_relative "typed_array"
 require_relative "typed_hash"
 
-module Jim
+module Jwl
   class SpecError < StandardError; end
   class UnsafeSpec
-    ArrayOfStrings = Jim::TypedArray(String)
-    HashOfStringToString = Jim::TypedHash(String, String)
-    HashOfStringToAOS = Jim::TypedHash(String, ArrayOfStrings)
+    ArrayOfStrings = Jwl::TypedArray(String)
+    HashOfStringToString = Jwl::TypedHash(String, String)
+    HashOfStringToAOS = Jwl::TypedHash(String, ArrayOfStrings)
 
     attr_accessor :runtime_dependencies
     attr_accessor :development_dependencies
@@ -145,7 +145,7 @@ module Jim
 
     def inspect
       accessors = to_h.map { |k, v| [k, v.inspect].join('=') }
-      "<Jim::UnsafeSpec #{accessors.join(' ')}>"
+      "<Jwl::UnsafeSpec #{accessors.join(' ')}>"
     end
   end
 end

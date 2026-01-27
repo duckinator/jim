@@ -1,22 +1,22 @@
 # frozen_string_literal: true
 
-require_relative "lib/jim/version"
+require_relative "lib/jwl/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "jim"
-  spec.version = Jim::VERSION
+  spec.name = "jwl"
+  spec.version = Jwl::VERSION
   spec.authors = ["Ellen Marie Dash"]
   spec.email = ["me@duckie.co"]
 
-  spec.summary = "jim likes gems"
-  spec.description = "jim likes gems very much and would like to help you with them"
-  spec.homepage = "https://github.com/duckinator/jim"
+  spec.summary = "jewel likes gems"
+  spec.description = "jewel likes gems very much and would like to help you with them"
+  spec.homepage = "https://github.com/duckinator/jwl"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.pkg.github.com/duckinator"
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/duckinator/jim"
+  spec.metadata["source_code_uri"] = "https://github.com/duckinator/jwl"
   spec.metadata["github_repo"] = spec.metadata["source_code_uri"]
 
   # Specify which files should be added to the gem when it is released.

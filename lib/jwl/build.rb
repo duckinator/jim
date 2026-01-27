@@ -3,7 +3,7 @@ require "digest"
 require "yaml"
 require "zlib"
 
-module Jim
+module Jwl
   class Build
     BUILD_DIR = "build"
 
@@ -24,7 +24,7 @@ module Jim
     end
 
     def self.build(spec)
-      spec = Jim.load_spec(spec) if spec.is_a?(String)
+      spec = Jwl.load_spec(spec) if spec.is_a?(String)
 
       filename = "#{spec.name}-#{spec.version}.gem"
 
@@ -34,14 +34,14 @@ module Jim
       # Remove the output files, if they already exist.
       FileUtils.rm_f([CHECKSUMS_PATH, DATA_PATH, METADATA_PATH])
 
-      Jim::Tar::UStarBuilder.new { |d|
+      Jwl::Tar::UStarBuilder.new { |d|
         spec.files.uniq.each { |f|
           d.add_file_path(f)
         }
       }.build.save(DATA_PATH)
 
       Zlib::GzipWriter.open(METADATA_PATH) { |gz|
-        gz.mtime = Jim.source_date_epoch.to_i
+        gz.mtime = Jwl.source_date_epoch.to_i
         gz.write(
           YAML.dump(spec.to_h)
             .gsub(/\A---$/, '--- !ruby/object:Gem::Specification')
@@ -61,12 +61,12 @@ module Jim
         },
       }
       Zlib::GzipWriter.open(CHECKSUMS_PATH) { |gz|
-        gz.mtime = Jim.source_date_epoch.to_i
+        gz.mtime = Jwl.source_date_epoch.to_i
         gz.write YAML.dump(checksums)
       }
 
       Dir.chdir(BUILD_DIR) {
-        Jim::Tar::UStarBuilder.new
+        Jwl::Tar::UStarBuilder.new
           .add_file_path(CHECKSUMS_FILE)
           .add_file_path(DATA_FILE)
           .add_file_path(METADATA_FILE)

@@ -1,23 +1,23 @@
 # frozen_string_literal: true
 
-require_relative "jim/version"
-require_relative "jim/unsafe_spec"
-require_relative "jim/platform"
+require_relative "jwl/version"
+require_relative "jwl/unsafe_spec"
+require_relative "jwl/platform"
 require "prism"
 
-module Jim
+module Jwl
   class Error < StandardError; end
 
   # Given a path to a gemspec, which contains arbitrary code of dubious provenance,
-  # run the code in a way that can returns the Jim::UnsafeSpec instance
+  # run the code in a way that can returns the Jwl::UnsafeSpec instance
   # created by the Gem::Specification.new {...} call.
   #
-  # That is to say, if you have jim.gemspec containing:
+  # That is to say, if you have jwl.gemspec containing:
   #     Gem::Specification.new do |spec|
   #       spec.name = "foo"
   #     end
   #
-  # You get a Jim::UnsafeSpec returned, even though you have to use `load`,
+  # You get a Jwl::UnsafeSpec returned, even though you have to use `load`,
   # and `load` always returns a boolean.
   #
   # This is truly cursed. I hate everything about this.
@@ -38,7 +38,7 @@ module Jim
         # Inside our fake `Gem` module, shove our fake `Specification` class.
         gem_mod.const_set(:Specification, spec_cls)
 
-        gem_mod.define_singleton_method(:win_platform?, &Jim::Platform.method(:windows?))
+        gem_mod.define_singleton_method(:win_platform?, &Jwl::Platform.method(:windows?))
 
         # Add `Gem::Platform::RUBY`, and raise an exception for all other platforms.
         gem_mod.const_set(:Platform, Class.new { |c|
@@ -64,7 +64,7 @@ module Jim
   end
 
   def self.cli
-    require_relative "jim/cli"
+    require_relative "jwl/cli"
     Cli.run
   end
 end

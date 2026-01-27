@@ -4,7 +4,7 @@
 
 require "optparse"
 
-module Jim
+module Jwl
   ##
   # An OptionParser wrapper providing a few convenience functions.
   class SimpleOpts < OptionParser

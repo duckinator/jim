@@ -1,4 +1,4 @@
-module Jim
+module Jwl
   module Console
     attr_accessor :always_default
     @always_default = false
