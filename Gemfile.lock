@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    jwl (1.0.0b3)
+    jwl (1.0.0b4)
 
 GEM
   remote: https://rubygems.org/
