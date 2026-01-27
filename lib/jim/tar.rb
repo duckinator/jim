@@ -114,7 +114,7 @@ module Jim
           Dir[File.join(path, '**', '*.rb')].map { |p|
             add_file_path(p, **opts)
           }
-          return
+          return self
         end
 
         File.open(path, 'rb') { |f|
