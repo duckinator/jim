@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in jim.gemspec
+# Specify your gem's dependencies in jwl.gemspec
 gemspec
 
 gem "irb"

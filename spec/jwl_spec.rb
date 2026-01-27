@@ -4,16 +4,16 @@ def gemspec_file(name)
   File.join(__dir__, "gemspecs", name)
 end
 
-RSpec.describe Jim do
+RSpec.describe Jwl do
   it "has a version number" do
-    expect(Jim::VERSION).not_to be nil
+    expect(Jwl::VERSION).not_to be nil
   end
 
   describe "load_spec" do
     # As a starting point, I'm just including a few gemspecs I have.
     # I'll add more targeted tests or fuzzing later.
     it "loads inq.gemspec" do
-      spec = Jim.load_spec(gemspec_file("inq.gemspec"))
+      spec = Jwl.load_spec(gemspec_file("inq.gemspec"))
       expect(spec.name).to eq("inq")
       expect(spec.authors).to eq(["Ellen Marie Dash"])
       expect(spec.email).to eq(["me@duckie.co"])

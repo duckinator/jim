@@ -43,7 +43,7 @@ module Net
   end
 end
 
-module Jim
+module Jwl
   ##
   # A wrapper around Net::HTTP, focused on ease of use and flexibility.
   module HTTP

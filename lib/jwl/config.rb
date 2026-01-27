@@ -2,11 +2,11 @@ require_relative "platform"
 require "fileutils"
 require "json"
 
-module Jim
+module Jwl
   class ConfigError < StandardError; end
 
   class Config
-    CONFIG_FILE_NAME = "jim.json"
+    CONFIG_FILE_NAME = "jwl.json"
     KEY_FILE_NAME = "api-key.json"
 
     def self.config_dir
@@ -19,7 +19,7 @@ module Jim
           raise ConfigError, "LOCALAPPDATA environment variable is not defined -- unsure how to continue"
         end
 
-        File.join(config_dir, 'jim')
+        File.join(config_dir, 'jwl')
       else
         user_home = ENV['HOME']
         xdg_config_dir = ENV['XDG_CONFIG_DIR']
@@ -29,10 +29,10 @@ module Jim
         end
 
         # Preference, in order:
-        # $XDG_CONFIG_DIR/.config/jim
-        # $HOME/.config/jim
+        # $XDG_CONFIG_DIR/.config/jwl
+        # $HOME/.config/jwl
         config_dir = ENV['XDG_CONFIG_DIR'] || File.join(ENV.fetch('HOME'), '.config')
-        File.join(config_dir, 'jim')
+        File.join(config_dir, 'jwl')
       end
     end
 

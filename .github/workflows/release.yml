@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'lib/jim/version.rb'
+      - 'lib/jwl/version.rb'
 
 jobs:
   test:
@@ -26,10 +26,10 @@ jobs:
     permissions:
       contents: write
     env:
-      JIM_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      JWL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v6
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
-      - run: ruby -Ilib exe/jim release
+      - run: ruby -Ilib exe/jwl release

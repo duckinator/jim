@@ -3,7 +3,7 @@ require 'json'
 require 'open3'
 require 'uri'
 
-module Jim
+module Jwl
   module GithubApiHelpers
     def api_req(endpoint, data, headers, server, method)
       headers ||= {}

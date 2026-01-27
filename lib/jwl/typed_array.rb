@@ -1,4 +1,4 @@
-module Jim
+module Jwl
   ##
   # An Array that raises exceptions unless values are of the
   # specified types.
@@ -11,7 +11,7 @@ module Jim
   # a[0] = "foo"
   # #=> "foo"
   # a[1] = 1
-  # #=> Jim::TypeError: expected val to be String, got Integer: 1
+  # #=> Jwl::TypeError: expected val to be String, got Integer: 1
   # ```
   class TypedArray < Array
     class TypedArrayError < TypeError

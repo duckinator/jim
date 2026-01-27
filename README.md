@@ -1,6 +1,6 @@
-# `jim`, a build and release tool for pure-Ruby gems
+# `jwl`, a build and release tool for pure-Ruby gems
 
-`jim` is a minimal tool for building and (eventually) publishing pure-Ruby gems.
+`jwl` is a minimal tool for building and (eventually) publishing pure-Ruby gems.
 
 Features:
 - signs in to a gem host
@@ -9,37 +9,37 @@ Features:
 - will eventually be able to publish gems
 - packing an entire (pure-Ruby) gem into a single file
 
-Things `jim` is not going to do:
-- jim will not support gems with native extensions.
-- jim will not handle every edge case.
-- jim will not manage locally-installed gems.
+Things `jwl` is not going to do:
+- jwl will not support gems with native extensions.
+- jwl will not handle every edge case.
+- jwl will not manage locally-installed gems.
 
-If you like `jim` and use Python, be sure to check out [bork](https://github.com/duckinator/bork).
+If you like `jwl` and use Python, be sure to check out [bork](https://github.com/duckinator/bork).
 
 ## Installation
 
 I'm hoping to provide single-file executables that bundle the entire gem,
 akin to [Python's ZipApps](https://docs.python.org/3/library/zipapp.html).
 
-<!-- You can [download the latest release](https://github.com/duckinator/jim/releases/latest/download/jim.rbz]. -->
+<!-- You can [download the latest release](https://github.com/duckinator/jwl/releases/latest/download/jwl.rbz]. -->
 
 ## Usage
 
 The basic commands you will need are:
-- `jim signin` / `jim signout`: sign in or out of a gem host.
-- `jim build`: build a gem, with the output in `./build/`.
-- `jim clean`: removes things created by `jim build`.
+- `jwl signin` / `jwl signout`: sign in or out of a gem host.
+- `jwl build`: build a gem, with the output in `./build/`.
+- `jwl clean`: removes things created by `jwl build`.
 
 More advanced features:
-- `jim pack`: pack an entire gem into `./build/pack/#{gem_name}.rb`.
+- `jwl pack`: pack an entire gem into `./build/pack/#{gem_name}.rb`.
 
 Eventually, there will also be:
-- `jim push`: push the specified gem to the configured host.
+- `jwl push`: push the specified gem to the configured host.
 
 ### Basic Usage
 
 ```console
-puppy@cerberus:~/okay$ jim signin
+puppy@cerberus:~/okay$ jwl signin
 Username: duckinator
 Password: 
 OTP: 
@@ -47,10 +47,10 @@ Please choose which scopes you want your API key to have:
 index_rubygems? [Y/n] 
 push_rubygem? [y/N] y
 yank_rubygem? [y/N] 
-Saved key with name "jim--cerberus-puppy-2025-10-25T152604" and scopes:
+Saved key with name "jwl--cerberus-puppy-2025-10-25T152604" and scopes:
 - index_rubygems
 - push_rubygem
-puppy@cerberus:~/okay$ jim build
+puppy@cerberus:~/okay$ jwl build
 
 Name:    okay
 Version: 12.0.4
@@ -69,34 +69,34 @@ Packing a gem creates a single Ruby file that contains the entirety of a gem.
 
 Your gem needs to:
 - be pure Ruby
-- have a single gemspec in the directory you run `jim` from
+- have a single gemspec in the directory you run `jwl` from
 - have a single executable specified in your gemspec
 
-When you run `jim pack`, creates a pure-Ruby unpacker, and appends a JSON object to the end of it.
+When you run `jwl pack`, creates a pure-Ruby unpacker, and appends a JSON object to the end of it.
 
 ```console
-~/jim$ ruby -Ilib exe/jim pack
-build/pack/jim.rb
-~/jim$ mv build/pack/jim.rb ~/jim.rb
-~/jim$ chmod +x ~/jim.rb
-~/jim$ cd ~
-~$ ./jim.rb
-Usage: jim [COMMAND] [OPTIONS] [ARGS...]
+~/jwl$ ruby -Ilib exe/jwl pack
+build/pack/jwl.rb
+~/jwl$ mv build/pack/jwl.rb ~/jwl.rb
+~/jwl$ chmod +x ~/jwl.rb
+~/jwl$ cd ~
+~$ ./jwl.rb
+Usage: jwl [COMMAND] [OPTIONS] [ARGS...]
 
 Commands
-  jim signin
-  jim signout
-  jim build
-  jim clean
-  jim gemspec
-  jim help
-  jim pack
+  jwl signin
+  jwl signout
+  jwl build
+  jwl clean
+  jwl gemspec
+  jwl help
+  jwl pack
 ~$
 ```
 
 ### Creating A Release
 
-Jim can not currently publish to gem hosts.
+jwl can not currently publish to gem hosts.
 <!--
 If you want to publish to a gem host, you first need to add the following to your gemspec:
 
@@ -111,17 +111,17 @@ If you want to publish to GitHub Releases, you first need to add the following t
   spec.metadata["github_repo"] = "https://github.com/EXAMPLE_USER/EXAMPLE_REPO"
 ```
 
-If you have `JIM_GITHUB_TOKEN` set to a GitHub Access Token, `jim release` will publish to GitHub Releases.
+If you have `jwl_GITHUB_TOKEN` set to a GitHub Access Token, `jwl release` will publish to GitHub Releases.
 
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, run `jim release`.
+To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, run `jwl release`.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/duckinator/jim.
+Bug reports and pull requests are welcome on GitHub at https://github.com/duckinator/jwl.
 
 ## License
 

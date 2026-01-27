@@ -4,9 +4,9 @@ require_relative "http"
 require "date"
 require "etc"
 
-module Jim
+module Jwl
   class Client
-    include Jim::Console
+    include Jwl::Console
 
     def initialize(base_uri)
       @base_uri = base_uri
@@ -33,7 +33,7 @@ module Jim
         scopes[k] = prompt_yesno(k.to_s, default_to_yes: scopes[k])
       end
 
-      name = "jim--#{Etc.uname[:nodename]}-#{Etc.getlogin}-#{DateTime.now.strftime('%Y-%m-%dT%H%M%S')}"
+      name = "jwl--#{Etc.uname[:nodename]}-#{Etc.getlogin}-#{DateTime.now.strftime('%Y-%m-%dT%H%M%S')}"
 
       form_data = {
         name: name,
@@ -55,11 +55,11 @@ module Jim
     end
 
     private def get(endpoint, **kwargs)
-      Jim::HTTP.get(@base_uri + endpoint, **kwargs)
+      Jwl::HTTP.get(@base_uri + endpoint, **kwargs)
     end
 
     private def post(endpoint, **kwargs)
-      Jim::HTTP.post(@base_uri + endpoint, **kwargs)
+      Jwl::HTTP.post(@base_uri + endpoint, **kwargs)
     end
   end
 end

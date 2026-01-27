@@ -8,9 +8,9 @@ require_relative "github_api"
 require_relative "packer"
 require_relative "simple_opts"
 
-module Jim
+module Jwl
   module Cli
-    extend Jim::Console
+    extend Jwl::Console
 
     METHODS = %w[signin signout build clean pack release help]
 
@@ -29,7 +29,7 @@ module Jim
     # Pack a gem into a single file.
     def self.pack(*args)
       opts = SimpleOpts.new(
-        banner: "Usage: jim pack [--quiet]",
+        banner: "Usage: jwl pack [--quiet]",
       )
 
       opts.simple("--quiet",
@@ -58,11 +58,11 @@ module Jim
     end
 
 #    def self.config(command, setting, value=nil)
-#      config = Jim::Config.load_or_create
+#      config = Jwl::Config.load_or_create
 #
-#      Jim::Config.set(setting, value) unless value.nil?
+#      Jwl::Config.set(setting, value) unless value.nil?
 #
-#      Jim::Config.get(setting)
+#      Jwl::Config.get(setting)
 #    end
 
     # Sign in to the specified gem server.
@@ -71,7 +71,7 @@ module Jim
 
       opts = SimpleOpts.new(
         defaults: { host: "https://rubygems.org" },
-        banner: "Usage: jim signin [--host HOST] [--otp CODE]",
+        banner: "Usage: jwl signin [--host HOST] [--otp CODE]",
       )
 
       opts.simple("--host HOST",
@@ -102,7 +102,7 @@ module Jim
 
       otp = prompt("OTP", options[:otp])
 
-      config = Jim::Client.new(gem_host).sign_in(username, password, otp)
+      config = Jwl::Client.new(gem_host).sign_in(username, password, otp)
       name = config["name"]
       scopes = config["scopes"]
 
@@ -112,13 +112,13 @@ module Jim
 
     # Sign out from configured gem host
     def self.signout
-      Jim::Config.delete_api_key
+      Jwl::Config.delete_api_key
     end
 
     # Builds a Gem from the provided gemspec.
     def self.build(*args)
       opts = SimpleOpts.new(
-        banner: "Usage: jim build [--quiet] [-C PATH] GEMSPEC",
+        banner: "Usage: jwl build [--quiet] [-C PATH] GEMSPEC",
         defaults: { path: "." },
       )
 
@@ -140,7 +140,7 @@ module Jim
 
       spec = load_spec_or_abort!(args.shift)
 
-      out_file = Dir.chdir(options[:path]) { Jim::Build.build(spec) }
+      out_file = Dir.chdir(options[:path]) { Jwl::Build.build(spec) }
 
       unless options[:quiet]
         puts "Name:    #{spec.name}"
@@ -154,7 +154,7 @@ module Jim
 
     # Clean up build/pack artifacts.
     def self.clean
-      FileUtils.rm_r(Jim::Build::BUILD_DIR) if File.exist?(Jim::Build::BUILD_DIR)
+      FileUtils.rm_r(Jwl::Build::BUILD_DIR) if File.exist?(Jwl::Build::BUILD_DIR)
     end
 
     # Build and release a gem.
@@ -186,8 +186,11 @@ module Jim
 
       gh_release =
         if github_repo
-          token = ENV["JIM_GITHUB_TOKEN"]
-          abort "error: Expected JIM_GITHUB_TOKEN to be defined"  if token.nil? || token.empty?
+          token = ENV["JWL_GITHUB_TOKEN"]
+          if (token.nil? || token.empty?) && ENV["JIM_GITHUB_TOKEN"]
+            abort "error: Jim was renamed to Jwl. Please change JIM_GITHUB_TOKEN to JWL_GITHUB_TOKEN."
+          end
+          abort "error: Expected JWL_GITHUB_TOKEN to be defined"  if token.nil? || token.empty?
 
           gh_repo_uri = URI(github_repo)
           owner_and_repo = gh_repo_uri.path.sub(%r[^/], '')
@@ -205,7 +208,7 @@ module Jim
           assets = files.map { |f| [f, Pathname(f).basename] }.to_h
 
           puts "Preparing GitHub Release."
-          gh = Jim::GithubApi.new(owner, repo, spec.name, token.strip)
+          gh = Jwl::GithubApi.new(owner, repo, spec.name, token.strip)
           gh.create_release(spec.version, assets: assets, note: note)
         end
 
@@ -225,16 +228,16 @@ module Jim
       end
 
       require 'pp'
-      pp Jim.load_spec(spec).to_h
+      pp Jwl.load_spec(spec).to_h
     end
 
     # Print this help text.
     def self.help
       puts <<~EOF
-        Usage: jim [COMMAND] [OPTIONS] [ARGS...]
+        Usage: jwl [COMMAND] [OPTIONS] [ARGS...]
 
         Commands
-          #{subcommand_summaries("jim", METHODS).join("\n  ")}
+          #{subcommand_summaries("jwl", METHODS).join("\n  ")}
       EOF
     end
 
@@ -250,8 +253,8 @@ module Jim
 
       # Slight kludge for packed script, since I don't want to monkeypatch Prism.
       comments =
-        if $JIM_DATA
-          Prism.parse_comments($JIM_DATA["files"][file])
+        if $JWL_DATA
+          Prism.parse_comments($JWL_DATA["files"][file])
         else
           Prism.parse_file_comments(file)
         end
@@ -280,7 +283,7 @@ module Jim
         abort "Found multiple gemspecs: #{spec}, #{rest.join(',')}" unless rest.empty?
       end
 
-      Jim.load_spec(spec)
+      Jwl.load_spec(spec)
     end
   end
 end

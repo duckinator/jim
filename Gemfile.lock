@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    jim (1.0.0b3)
+    jwl (1.0.0b3)
 
 GEM
   remote: https://rubygems.org/
@@ -122,7 +122,7 @@ PLATFORMS
 
 DEPENDENCIES
   irb
-  jim!
+  jwl!
   pry
   rake (~> 13.0)
   rbs
