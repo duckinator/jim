@@ -19,7 +19,7 @@ module Jwl
           if $JWL_DATA["files"].keys.include?(full_path)
             puts "Loading packed " + full_path + "..." if $JWL_DEBUG
             unless $JWL_LOADED.include?(full_path)
-              eval($JWL_DATA["files"][full_path], binding, full_path, 0)
+              eval($JWL_DATA["files"][full_path], binding, full_path, 1)
               $JWL_LOADED.push(full_path)
             end
             return true
@@ -53,7 +53,7 @@ module Jwl
 
       $JWL_EXECUTABLE = $JWL_DATA["executable"]
       $JWL_EXE_CONTENTS = $JWL_DATA["files"][$JWL_EXECUTABLE]
-      eval($JWL_EXE_CONTENTS, binding, $JWL_EXECUTABLE, 0)
+      eval($JWL_EXE_CONTENTS, binding, $JWL_EXECUTABLE, 1)
 
       __END__
     EOF
@@ -79,7 +79,7 @@ module Jwl
         "# #{spec.name} #{spec.version}",
         "# Packed by Jwl #{Jwl::VERSION}",
         UNPACKER,
-        JSON.dump(data),
+        JSON.pretty_generate(data),
       ].join("\n")
     end
   end
