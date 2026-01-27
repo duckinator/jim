@@ -4,7 +4,7 @@ module Jim
     @always_default = false
 
     def prompt(msg, default=nil, noecho: false)
-      return default if always_default
+      return default if @always_default
 
       print "#{msg}: "
 
@@ -16,7 +16,7 @@ module Jim
     end
 
     def prompt_yesno(msg, default_to_yes: false)
-      return default_to_yes if always_default
+      return default_to_yes if @always_default
 
       yesno = (default_to_yes ? "Y/n" : "y/N")
 

@@ -30,7 +30,7 @@ module Jim
 
       puts "Please choose which scopes you want your API key to have:"
       scopes.each do |k, v|
-        scopes[k] = prompt_yesno(k, default_to_yes: scopes[k])
+        scopes[k] = prompt_yesno(k.to_s, default_to_yes: scopes[k])
       end
 
       name = "jim--#{Etc.uname[:nodename]}-#{Etc.getlogin}-#{DateTime.now.strftime('%Y-%m-%dT%H%M%S')}"

@@ -15,6 +15,7 @@ end
 
 module Jim
   class Client
+    include Jim::Console
     @base_uri: String
 
     def initialize: (String base_uri) -> void
@@ -24,6 +25,7 @@ module Jim
     private
     def get: (String endpoint, **untyped kwargs) -> untyped
     def post: (String endpoint, **untyped kwargs) -> untyped
+    def create_api_key: (untyped headers, untyped form_data, String username, String password) -> untyped
   end
 end
 
@@ -33,6 +35,8 @@ module Jim
     METHODS: ::Array[String]
 
     def self.run: () -> untyped
+
+    def self.pack: (*String args) -> (String | nil)
 
     def self.config: (untyped command, untyped setting, ?untyped? value) -> untyped
 
@@ -57,6 +61,8 @@ module Jim
     def self.help_text: (untyped prefix, untyped method_name, ?summary: bool) -> ::Array[::String | untyped]
 
     def self.subcommand_summaries: (untyped prefix, untyped methods) -> untyped
+
+    def self.load_spec_or_abort!: (?String spec) -> ::Jim::UnsafeSpec
   end
 end
 
@@ -73,6 +79,9 @@ module Jim
     CONFIG_FILE: String
     KEY_FILE: String
 
+    def self.config_dir: () -> String
+    def self.config_file: () -> String
+    def self.key_file: () -> String
     def self.save_api_key: (untyped name, untyped server, untyped key, untyped scopes, untyped needs_mfa) -> untyped
     def self.api_key: () -> untyped
     def self.load_api_key: () -> untyped
@@ -84,7 +93,8 @@ end
 
 module Jim
   module Console
-    def prompt: (untyped msg, ?untyped? default, ?noecho: bool) -> untyped
+    def prompt: (untyped msg, ?String default, ?noecho: bool) -> String
+    def prompt_yesno: (String msg, ?default_to_yes: bool) -> bool
   end
 end
 
@@ -99,6 +109,16 @@ module Net
 end
 
 module Jim
+  module GithubApiHelpers
+    self.@token: untyped
+    def api_req: (untyped endpoint, untyped data, untyped headers, untyped server, untyped method) -> untyped
+    def api_post: (untyped endpoint, untyped data, ?untyped headers, ?untyped server) -> untyped
+    def api_get: (untyped endpoint, ?untyped headers, ?untyped server) -> untyped
+    def api_patch: (untyped endpoint, untyped data, ?untyped headers, ?untyped server) -> untyped
+  end
+end
+
+module Jim
   module HTTP
     class RedirectLimitError < StandardError
     end
@@ -109,6 +129,8 @@ module Jim
                     ?headers: ::Hash[String, String]?, ?basic_auth: untyped) -> untyped
 
     def self.post: (untyped url, ?data: untyped?, ?form_data: untyped?, ?headers: ::Hash[untyped, untyped], ?basic_auth: untyped?) -> untyped
+
+    def self.patch: (untyped url, ?data: untyped?, ?headers: ::Hash[untyped, untyped], ?basic_auth: untyped?) -> untyped
 
     # Helper method for actually creating a request.
     #
